@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="format-detection" content="telephone=no">
+    <title>甲骨文书写练习</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- 文字信息展示区 -->
+        <div class="info-section">
+            <!-- 文本输入区 -->
+            <div class="input-section">
+                <div class="pronunciation" id="pronunciation">读音：</div>
+                <div class="meaning" id="meaning">含义：</div>
+                <input type="text" id="textInput" maxlength="1">
+                <button id="clearBtn">清除</button>
+            </div>
+        </div>
+        
+        <!-- 甲骨文画布区 -->
+        <div class="canvas-section">
+            <canvas id="oracleCanvas"></canvas>
+            
+            <!-- 庆祝效果 -->
+            <div class="celebration" id="celebration">
+                <div class="celebration-text">🎉撒花完成🎉</div>
+            </div>
+            
+            <!-- 动态花瓣容器 -->
+            <div class="petals-container" id="petalsContainer"></div>
+        </div>
+    </div>
+    
+    <script src="app.js"></script>
+</body>
+</html>
