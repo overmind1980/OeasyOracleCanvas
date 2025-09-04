@@ -2,40 +2,410 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="format-detection" content="telephone=no">
-    <title>甲骨文书写练习</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>甲骨文学习 - 学龄前儿童汉字启蒙</title>
     <link rel="stylesheet" href="styles.css">
+    <style>
+        .age-selector {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+        
+        .age-btn {
+            padding: 10px 20px;
+            font-size: 18px;
+            font-weight: bold;
+            border: 2px solid #4CAF50;
+            background: linear-gradient(135deg, #81C784, #4CAF50);
+            color: white;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .age-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+        }
+        
+        .age-btn.active {
+            background: linear-gradient(135deg, #FF9800, #F57C00);
+            border-color: #FF9800;
+        }
+        
+        .age-section {
+            display: none;
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        .age-section.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .character-grid {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 8px;
+            margin: 10px 0;
+            padding: 5px;
+            max-height: 75vh;
+            overflow: visible;
+        }
+        
+        /* 平板电脑适配 */
+        @media (max-width: 1024px) {
+            .character-grid {
+                grid-template-columns: repeat(10, 1fr);
+                gap: 6px;
+                max-height: 80vh;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .character-grid {
+                grid-template-columns: repeat(8, 1fr);
+                gap: 5px;
+                max-height: 82vh;
+            }
+        }
+        
+        .character-card {
+            background: linear-gradient(135deg, #E3F2FD, #BBDEFB);
+            border: 1px solid #2196F3;
+            border-radius: 8px;
+            padding: 6px 4px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .character-card:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+            background: linear-gradient(135deg, #FFF3E0, #FFE0B2);
+            border-color: #FF9800;
+        }
+        
+        .character-display {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1976D2;
+            margin-bottom: 3px;
+            font-family: 'FangZhengOracle', 'HYChenTiJiaGuWen', 'ZhongYanYuan', 'OeasyOracle', serif;
+            line-height: 1;
+        }
+        
+        @media (max-width: 1024px) {
+            .character-display {
+                font-size: 22px;
+                margin-bottom: 2px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .character-display {
+                font-size: 20px;
+                margin-bottom: 2px;
+            }
+        }
+        
+        .character-info {
+            font-size: 9px;
+            color: #424242;
+            line-height: 1.1;
+        }
+        
+        @media (max-width: 1024px) {
+            .character-info {
+                font-size: 8px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .character-info {
+                font-size: 7px;
+            }
+        }
+        
+        .character-pronunciation {
+            font-weight: bold;
+            color: #E91E63;
+            margin-bottom: 2px;
+        }
+        
+        .character-meaning {
+            color: #666;
+        }
+        
+        .section-title {
+            text-align: center;
+            font-size: 24px;
+            color: #2E7D32;
+            margin: 10px 0;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+        
+        .main-title {
+            text-align: center;
+            font-size: 42px;
+            color: #1976D2;
+            margin: 30px 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .subtitle {
+            text-align: center;
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', '微软雅黑', Arial, sans-serif;
+            background: linear-gradient(135deg, #F8F9FA, #E9ECEF);
+            margin: 0;
+            padding: 10px;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 15px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+            height: calc(100vh - 30px);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .age-section {
+            flex: 1;
+            overflow: hidden;
+            display: none;
+        }
+        
+        .age-section.active {
+            display: flex;
+            flex-direction: column;
+        }
+    </style>
 </head>
 <body>
-    <div class="app-container">
-        <!-- 文字信息展示区 -->
-        <div class="info-section">
-            <!-- 文本输入区 -->
-            <div class="input-section">
-                <div class="pronunciation" id="pronunciation">读音：</div>
-                <div class="meaning" id="meaning">含义：</div>
-                <input type="text" id="textInput" maxlength="1">
-                <button id="clearBtn">清除</button>
-            </div>
+    <div class="container">
+        <div class="age-selector">
+            <button class="age-btn active" onclick="showAge(2)">👶 2岁 (10字)</button>
+            <button class="age-btn" onclick="showAge(3)">🧒 3岁 (20字)</button>
+            <button class="age-btn" onclick="showAge(4)">👦 4岁 (30字)</button>
+            <button class="age-btn" onclick="showAge(5)">👧 5岁 (40字)</button>
         </div>
         
-        <!-- 甲骨文画布区 -->
-        <div class="canvas-section">
-            <canvas id="oracleCanvas"></canvas>
-            
-            <!-- 庆祝效果 -->
-            <div class="celebration" id="celebration">
-                <div class="celebration-text">🎉撒花完成🎉</div>
-            </div>
-            
-            <!-- 动态花瓣容器 -->
-            <div class="petals-container" id="petalsContainer"></div>
+        <!-- 2岁汉字 -->
+        <div id="age-2" class="age-section active">
+            <h2 class="section-title">👶 2岁宝宝学汉字 (10个字)</h2>
+            <div class="character-grid" id="grid-2"></div>
+        </div>
+        
+        <!-- 3岁汉字 -->
+        <div id="age-3" class="age-section">
+            <h2 class="section-title">🧒 3岁小朋友学汉字 (20个字)</h2>
+            <div class="character-grid" id="grid-3"></div>
+        </div>
+        
+        <!-- 4岁汉字 -->
+        <div id="age-4" class="age-section">
+            <h2 class="section-title">👦 4岁小朋友学汉字 (30个字)</h2>
+            <div class="character-grid" id="grid-4"></div>
+        </div>
+        
+        <!-- 5岁汉字 -->
+        <div id="age-5" class="age-section">
+            <h2 class="section-title">👧 5岁小朋友学汉字 (40个字)</h2>
+            <div class="character-grid" id="grid-5"></div>
         </div>
     </div>
     
-    <script src="app.js"></script>
+    <script>
+        // 年龄段汉字数据（每个年龄段的汉字不重复）
+        const ageCharacters = {
+            2: ['一', '二', '三', '人', '大', '小', '目', '手', '日', '月'],
+            3: ['四', '五', '六', '七', '八', '九', '十', '口', '耳', '心', '木', '火', '水', '土', '山', '天', '地', '上', '下', '中'],
+            4: ['牛', '马', '羊', '犬', '鸟', '鱼', '虫', '龟', '父', '母', '子', '女', '男', '老', '少', '来', '去', '出', '入', '左', '右', '前', '后', '东', '西', '南', '北', '白', '黑', '红'],
+            5: ['门', '户', '窗', '房', '车', '船', '刀', '弓', '矢', '网', '田', '米', '禾', '麦', '豆', '瓜', '果', '花', '草', '叶', '根', '枝', '石', '金', '玉', '贝', '钱', '衣', '食', '住', '行', '学', '问', '听', '看', '说', '笑', '哭', '好', '坏']
+        };
+        
+        // 汉字信息数据库（扩展版）
+        const characterInfo = {
+            '一': { pronunciation: 'yī', meaning: '数字一' },
+            '二': { pronunciation: 'èr', meaning: '数字二' },
+            '三': { pronunciation: 'sān', meaning: '数字三' },
+            '人': { pronunciation: 'rén', meaning: '人类' },
+            '大': { pronunciation: 'dà', meaning: '大的' },
+            '小': { pronunciation: 'xiǎo', meaning: '小的' },
+            '目': { pronunciation: 'mù', meaning: '眼睛' },
+            '手': { pronunciation: 'shǒu', meaning: '手掌' },
+            '日': { pronunciation: 'rì', meaning: '太阳' },
+            '月': { pronunciation: 'yuè', meaning: '月亮' },
+            '四': { pronunciation: 'sì', meaning: '数字四' },
+            '五': { pronunciation: 'wǔ', meaning: '数字五' },
+            '六': { pronunciation: 'liù', meaning: '数字六' },
+            '七': { pronunciation: 'qī', meaning: '数字七' },
+            '八': { pronunciation: 'bā', meaning: '数字八' },
+            '九': { pronunciation: 'jiǔ', meaning: '数字九' },
+            '十': { pronunciation: 'shí', meaning: '数字十' },
+            '口': { pronunciation: 'kǒu', meaning: '嘴巴' },
+            '耳': { pronunciation: 'ěr', meaning: '耳朵' },
+            '心': { pronunciation: 'xīn', meaning: '心脏' },
+            '木': { pronunciation: 'mù', meaning: '树木' },
+            '火': { pronunciation: 'huǒ', meaning: '火焰' },
+            '水': { pronunciation: 'shuǐ', meaning: '水' },
+            '土': { pronunciation: 'tǔ', meaning: '土地' },
+            '山': { pronunciation: 'shān', meaning: '山峰' },
+            '天': { pronunciation: 'tiān', meaning: '天空' },
+            '地': { pronunciation: 'dì', meaning: '大地' },
+            '上': { pronunciation: 'shàng', meaning: '上面' },
+            '下': { pronunciation: 'xià', meaning: '下面' },
+            '中': { pronunciation: 'zhōng', meaning: '中间' },
+            '牛': { pronunciation: 'niú', meaning: '牛' },
+            '马': { pronunciation: 'mǎ', meaning: '马' },
+            '羊': { pronunciation: 'yáng', meaning: '羊' },
+            '犬': { pronunciation: 'quǎn', meaning: '狗' },
+            '鸟': { pronunciation: 'niǎo', meaning: '鸟' },
+            '鱼': { pronunciation: 'yú', meaning: '鱼' },
+            '虫': { pronunciation: 'chóng', meaning: '虫子' },
+            '龟': { pronunciation: 'guī', meaning: '乌龟' },
+            '父': { pronunciation: 'fù', meaning: '父亲' },
+            '母': { pronunciation: 'mǔ', meaning: '母亲' },
+            '子': { pronunciation: 'zǐ', meaning: '儿子' },
+            '女': { pronunciation: 'nǚ', meaning: '女儿' },
+            '男': { pronunciation: 'nán', meaning: '男性' },
+            '老': { pronunciation: 'lǎo', meaning: '年老' },
+            '少': { pronunciation: 'shào', meaning: '年少' },
+            '来': { pronunciation: 'lái', meaning: '来到' },
+            '去': { pronunciation: 'qù', meaning: '离去' },
+            '出': { pronunciation: 'chū', meaning: '出来' },
+            '入': { pronunciation: 'rù', meaning: '进入' },
+            '左': { pronunciation: 'zuǒ', meaning: '左边' },
+            '右': { pronunciation: 'yòu', meaning: '右边' },
+            '前': { pronunciation: 'qián', meaning: '前面' },
+            '后': { pronunciation: 'hòu', meaning: '后面' },
+            '东': { pronunciation: 'dōng', meaning: '东方' },
+            '西': { pronunciation: 'xī', meaning: '西方' },
+            '南': { pronunciation: 'nán', meaning: '南方' },
+            '北': { pronunciation: 'běi', meaning: '北方' },
+            '白': { pronunciation: 'bái', meaning: '白色' },
+            '黑': { pronunciation: 'hēi', meaning: '黑色' },
+            '红': { pronunciation: 'hóng', meaning: '红色' },
+            '门': { pronunciation: 'mén', meaning: '门' },
+            '户': { pronunciation: 'hù', meaning: '门户' },
+            '窗': { pronunciation: 'chuāng', meaning: '窗户' },
+            '房': { pronunciation: 'fáng', meaning: '房屋' },
+            '车': { pronunciation: 'chē', meaning: '车辆' },
+            '船': { pronunciation: 'chuán', meaning: '船只' },
+            '刀': { pronunciation: 'dāo', meaning: '刀具' },
+            '弓': { pronunciation: 'gōng', meaning: '弓箭' },
+            '矢': { pronunciation: 'shǐ', meaning: '箭' },
+            '网': { pronunciation: 'wǎng', meaning: '网' },
+            '田': { pronunciation: 'tián', meaning: '田地' },
+            '米': { pronunciation: 'mǐ', meaning: '米粒' },
+            '禾': { pronunciation: 'hé', meaning: '禾苗' },
+            '麦': { pronunciation: 'mài', meaning: '麦子' },
+            '豆': { pronunciation: 'dòu', meaning: '豆子' },
+            '瓜': { pronunciation: 'guā', meaning: '瓜果' },
+            '果': { pronunciation: 'guǒ', meaning: '果实' },
+            '花': { pronunciation: 'huā', meaning: '花朵' },
+            '草': { pronunciation: 'cǎo', meaning: '草' },
+            '叶': { pronunciation: 'yè', meaning: '叶子' },
+            '根': { pronunciation: 'gēn', meaning: '根部' },
+            '枝': { pronunciation: 'zhī', meaning: '树枝' },
+            '石': { pronunciation: 'shí', meaning: '石头' },
+            '金': { pronunciation: 'jīn', meaning: '金子' },
+            '玉': { pronunciation: 'yù', meaning: '玉石' },
+            '贝': { pronunciation: 'bèi', meaning: '贝壳' },
+            '钱': { pronunciation: 'qián', meaning: '钱币' },
+            '衣': { pronunciation: 'yī', meaning: '衣服' },
+            '食': { pronunciation: 'shí', meaning: '食物' },
+            '住': { pronunciation: 'zhù', meaning: '居住' },
+            '行': { pronunciation: 'xíng', meaning: '行走' },
+            '学': { pronunciation: 'xué', meaning: '学习' },
+            '问': { pronunciation: 'wèn', meaning: '询问' },
+            '听': { pronunciation: 'tīng', meaning: '听见' },
+            '看': { pronunciation: 'kàn', meaning: '看见' },
+            '说': { pronunciation: 'shuō', meaning: '说话' },
+            '笑': { pronunciation: 'xiào', meaning: '笑' },
+            '哭': { pronunciation: 'kū', meaning: '哭' },
+            '好': { pronunciation: 'hǎo', meaning: '好的' },
+            '坏': { pronunciation: 'huài', meaning: '坏的' }
+        };
+        
+        // 显示指定年龄段
+        function showAge(age) {
+            // 隐藏所有年龄段
+            document.querySelectorAll('.age-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // 移除所有按钮的active状态
+            document.querySelectorAll('.age-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // 显示选中的年龄段
+            document.getElementById(`age-${age}`).classList.add('active');
+            
+            // 激活对应按钮
+            event.target.classList.add('active');
+        }
+        
+        // 创建汉字卡片
+        function createCharacterCard(char) {
+            const info = characterInfo[char] || { pronunciation: '', meaning: '' };
+            return `
+                <div class="character-card" onclick="goToChar('${char}')">
+                    <div class="character-display">${char}</div>
+                    <div class="character-info">
+                        <div class="character-pronunciation">${info.pronunciation}</div>
+                        <div class="character-meaning">${info.meaning}</div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // 跳转到字符练习页面
+        function goToChar(char) {
+            window.location.href = `char.html?c=${encodeURIComponent(char)}`;
+        }
+        
+        // 初始化页面
+        function initPage() {
+            // 为每个年龄段生成汉字卡片
+            Object.keys(ageCharacters).forEach(age => {
+                const grid = document.getElementById(`grid-${age}`);
+                const characters = ageCharacters[age];
+                grid.innerHTML = characters.map(char => createCharacterCard(char)).join('');
+            });
+        }
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', initPage);
+    </script>
 </body>
 </html>

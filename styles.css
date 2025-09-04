@@ -142,7 +142,7 @@ body {
     background: rgba(255, 255, 255, 0.9);
     color: #8B4513;
     text-align: center;
-    width: 40px;
+    width: 80px;
     height: 36px;
     font-weight: bold;
     outline: none;
@@ -155,7 +155,7 @@ body {
     transform: scale(1.05);
 }
 
-#clearBtn {
+#clearBtn, #backBtn {
     font-size: 14px;
     padding: 8px 16px;
     background: #8B4513;
@@ -169,7 +169,7 @@ body {
     height: 36px;
 }
 
-#clearBtn:hover {
+#clearBtn:hover, #backBtn:hover {
     background: #A0522D;
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);

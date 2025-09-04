@@ -11,8 +11,8 @@ const STYLE_CONFIG = {
     oracleColor: '#808080',
     brushColor: '#000000',
     backgroundColor: '#F5DEB3',
-    brushSize: 12,  // 笔触大小，与drawBrushStroke中的lineWidth保持一致
-    completionThreshold: 0.5  // 降低阈值到50%以便测试
+    brushSize: 18,  // 增加笔触大小，让画笔更粗更明显
+    completionThreshold: 0.45  // 设置阈值为45%
 };
 
 // 坐标点类
@@ -450,10 +450,10 @@ class CanvasDrawing {
         // 立即绘制一个点，确保画笔落下时有即时反馈
         const isInOracleArea = this.isPointInOracleText(pos.x, pos.y);
         if (isInOracleArea) {
-            // 绘制一个小圆点作为起始点
+            // 绘制一个更大的圆点作为起始点
             this.ctx.fillStyle = STYLE_CONFIG.brushColor;
             this.ctx.beginPath();
-            this.ctx.arc(pos.x, pos.y, 6, 0, 2 * Math.PI);
+            this.ctx.arc(pos.x, pos.y, STYLE_CONFIG.brushSize / 2, 0, 2 * Math.PI);
             this.ctx.fill();
         }
     }
@@ -522,7 +522,7 @@ class CanvasDrawing {
         if (!points || points.length < 2) return;
         
         this.ctx.strokeStyle = STYLE_CONFIG.brushColor;
-        this.ctx.lineWidth = 12; // 增加笔触粗细
+        this.ctx.lineWidth = STYLE_CONFIG.brushSize; // 使用配置中的笔触大小
         this.ctx.lineCap = 'round';
         this.ctx.lineJoin = 'round';
         this.ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
@@ -551,7 +551,7 @@ class CanvasDrawing {
         this.ctx.shadowOffsetY = 1;
         
         this.ctx.beginPath();
-        this.ctx.arc(point.x, point.y, 6, 0, 2 * Math.PI);
+        this.ctx.arc(point.x, point.y, STYLE_CONFIG.brushSize / 2, 0, 2 * Math.PI);
         this.ctx.fill();
         
         // 重置阴影设置
@@ -669,9 +669,12 @@ class CanvasDrawing {
         const tempCanvas = document.createElement('canvas');
         const tempCtx = tempCanvas.getContext('2d');
         
-        // 设置临时canvas尺寸
-        tempCanvas.width = this.oracleTextBounds.width;
-        tempCanvas.height = this.oracleTextBounds.height;
+        // 设置临时canvas尺寸，与笔画检测保持一致
+        const padding = STYLE_CONFIG.brushSize;
+        const width = this.oracleTextBounds.width + padding * 2;
+        const height = this.oracleTextBounds.height + padding * 2;
+        tempCanvas.width = width;
+        tempCanvas.height = height;
         
         // 获取字体信息
         const fontSize = this.oracleTextBounds.height;
@@ -683,16 +686,17 @@ class CanvasDrawing {
         // 在临时canvas上绘制文字
         tempCtx.fillText(
             appState.currentChar.oracleForm,
-            tempCanvas.width / 2,
-            tempCanvas.height / 2
+            width / 2,
+            height / 2
         );
         
-        // 计算非透明像素数量
-        const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+        // 计算非透明像素数量，使用与笔画检测相同的阈值
+        const imageData = tempCtx.getImageData(0, 0, width, height);
         let pixelCount = 0;
+        const alphaThreshold = 50; // 与笔画检测使用相同的阈值
         
         for (let i = 3; i < imageData.data.length; i += 4) {
-            if (imageData.data[i] > 0) { // alpha通道大于0表示非透明
+            if (imageData.data[i] > alphaThreshold) { // 使用相同的alpha阈值
                 pixelCount++;
             }
         }
@@ -710,9 +714,10 @@ class CanvasDrawing {
         const strokeCanvas = document.createElement('canvas');
         const strokeCtx = strokeCanvas.getContext('2d');
         
-        // 设置canvas尺寸为甲骨文字体区域
-        const width = this.oracleTextBounds.width;
-        const height = this.oracleTextBounds.height;
+        // 设置canvas尺寸为甲骨文字体区域，增加一些边距以确保完整覆盖
+        const padding = STYLE_CONFIG.brushSize;
+        const width = this.oracleTextBounds.width + padding * 2;
+        const height = this.oracleTextBounds.height + padding * 2;
         oracleCanvas.width = strokeCanvas.width = width;
         oracleCanvas.height = strokeCanvas.height = height;
         
@@ -735,8 +740,8 @@ class CanvasDrawing {
         strokeCtx.lineCap = 'round';
         strokeCtx.lineJoin = 'round';
         
-        // 调整坐标系，使其相对于甲骨文字体区域
-        strokeCtx.translate(-this.oracleTextBounds.x, -this.oracleTextBounds.y);
+        // 调整坐标系，使其相对于甲骨文字体区域（考虑padding）
+        strokeCtx.translate(-this.oracleTextBounds.x + padding, -this.oracleTextBounds.y + padding);
         
         // 绘制所有笔画
         appState.drawing.strokes.forEach(stroke => {
@@ -759,15 +764,16 @@ class CanvasDrawing {
         const oracleImageData = oracleCtx.getImageData(0, 0, width, height);
         const strokeImageData = strokeCtx.getImageData(0, 0, width, height);
         
-        // 4. 计算重叠的像素数量（只有在甲骨文字体像素存在的地方才计算笔画覆盖）
+        // 4. 计算重叠的像素数量（使用更宽松的阈值）
         let coveragePixels = 0;
+        const alphaThreshold = 50; // 降低alpha阈值，使检测更敏感
         
         for (let i = 0; i < oracleImageData.data.length; i += 4) {
             const oracleAlpha = oracleImageData.data[i + 3]; // 甲骨文字体的alpha通道
             const strokeAlpha = strokeImageData.data[i + 3]; // 笔画的alpha通道
             
-            // 只有当甲骨文字体像素存在且笔画也覆盖了该像素时才计数
-            if (oracleAlpha > 0 && strokeAlpha > 0) {
+            // 使用更宽松的阈值来判断像素覆盖
+            if (oracleAlpha > alphaThreshold && strokeAlpha > alphaThreshold) {
                 coveragePixels++;
             }
         }
@@ -805,11 +811,12 @@ class CanvasDrawing {
     
     // 在画布上显示进度百分比
     updateProgressDisplay() {
-        const percentage = Math.round(appState.drawing.progress * 100);
-        console.log(`书写进度: ${percentage}%`);
+        // 按新规则计算显示百分比：completionThreshold开方乘以10，四舍五入保留整数
+        const displayPercentage = Math.round(Math.sqrt(STYLE_CONFIG.completionThreshold) * 10);
+        console.log(`书写进度: ${displayPercentage}% (基于阈值${STYLE_CONFIG.completionThreshold}的开方计算)`);
         
         // 在画布右上角绘制进度百分比
-        this.drawProgressOnCanvas(percentage);
+        this.drawProgressOnCanvas(displayPercentage);
     }
     
     // 在画布上绘制进度百分比
@@ -1204,28 +1211,41 @@ class CanvasDrawing {
 // 文字信息类
 class CharacterInfo {
     constructor() {
-        // 简化的字符信息数据库
-        this.characterDB = {
-            '人': { pronunciation: 'rén', meaning: '人类、人民', oracleForm: '人' },
-            '大': { pronunciation: 'dà', meaning: '大的、巨大', oracleForm: '大' },
-            '小': { pronunciation: 'xiǎo', meaning: '小的、微小', oracleForm: '小' },
-            '山': { pronunciation: 'shān', meaning: '山峰、高山', oracleForm: '山' },
-            '水': { pronunciation: 'shuǐ', meaning: '水、液体', oracleForm: '水' },
-            '火': { pronunciation: 'huǒ', meaning: '火焰、燃烧', oracleForm: '火' },
-            '土': { pronunciation: 'tǔ', meaning: '土地、泥土', oracleForm: '土' },
-            '木': { pronunciation: 'mù', meaning: '树木、木材', oracleForm: '木' },
-            '金': { pronunciation: 'jīn', meaning: '金属、黄金', oracleForm: '金' },
-            '日': { pronunciation: 'rì', meaning: '太阳、日子', oracleForm: '日' },
-            '月': { pronunciation: 'yuè', meaning: '月亮、月份', oracleForm: '月' },
-            '天': { pronunciation: 'tiān', meaning: '天空、上天', oracleForm: '天' },
-            '地': { pronunciation: 'dì', meaning: '大地、地面', oracleForm: '地' },
-            '目': { pronunciation: 'mù', meaning: '眼睛、目标', oracleForm: '目' },
-            '龟': { pronunciation: 'guī', meaning: '乌龟、龟甲', oracleForm: '龟' },
-            '疢': { pronunciation: 'chèn', meaning: '疾病、病痛', oracleForm: '疢' }
-        };
+        this.characterDB = null;
+        this.isLoaded = false;
     }
     
-    getCharacterInfo(char) {
+    // 异步加载字符数据库
+    async loadCharacterDB() {
+        if (this.isLoaded) {
+            return this.characterDB;
+        }
+        
+        try {
+            const response = await fetch('./CharacterInfo.json');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            this.characterDB = data.characterDB;
+            this.isLoaded = true;
+            console.log('字符数据库加载成功');
+            return this.characterDB;
+        } catch (error) {
+            console.error('加载字符数据库失败:', error);
+            // 如果加载失败，使用空对象作为备用
+            this.characterDB = {};
+            this.isLoaded = true;
+            return this.characterDB;
+        }
+    }
+    
+    async getCharacterInfo(char) {
+        // 确保数据已加载
+        if (!this.isLoaded) {
+            await this.loadCharacterDB();
+        }
+        
         const info = this.characterDB[char];
         if (info) {
             return {
@@ -1260,21 +1280,28 @@ async function initApp() {
     const canvas = document.getElementById('oracleCanvas');
     const textInput = document.getElementById('textInput');
     const clearBtn = document.getElementById('clearBtn');
+    const backBtn = document.getElementById('backBtn');
     const pronunciationEl = document.getElementById('pronunciation');
     const meaningEl = document.getElementById('meaning');
     
     // 初始化Canvas绘制
     canvasDrawing = new CanvasDrawing(canvas);
     
-    // 加载字体
-    console.log('正在加载甲骨文字体...');
-    appState.availableFont = await fontLoader.getAvailableFont();
+    // 并行加载字体和字符数据库
+    console.log('正在加载甲骨文字体和字符数据库...');
+    const [availableFont] = await Promise.all([
+        fontLoader.getAvailableFont(),
+        characterInfo.loadCharacterDB()
+    ]);
+    
+    appState.availableFont = availableFont;
     appState.fontLoaded = true;
     console.log(`使用字体: ${appState.availableFont}`);
     
     // 绑定事件
     textInput.addEventListener('input', handleTextInput);
     clearBtn.addEventListener('click', handleClear);
+    backBtn.addEventListener('click', handleBack);
     
     // 处理URL参数（如果存在）
     const urlParams = new URLSearchParams(window.location.search);
@@ -1300,7 +1327,7 @@ async function handleTextInput(e) {
             const lastChar = text[text.length - 1];
             
             // 获取字符信息
-            const charInfo = characterInfo.getCharacterInfo(lastChar);
+            const charInfo = await characterInfo.getCharacterInfo(lastChar);
             appState.currentChar = new Character(
                 lastChar,
                 charInfo.pronunciation,
@@ -1355,6 +1382,11 @@ function handleClear() {
     
     updateCharacterDisplay();
     canvasDrawing.clearCanvas();
+}
+
+// 处理返回
+function handleBack() {
+    window.location.href = 'index.html';
 }
 
 // 页面加载完成后初始化应用
