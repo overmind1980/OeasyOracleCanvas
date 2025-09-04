@@ -1025,7 +1025,8 @@ class CharacterInfo {
             '日': { pronunciation: 'rì', meaning: '太阳、日子', oracleForm: '日' },
             '月': { pronunciation: 'yuè', meaning: '月亮、月份', oracleForm: '月' },
             '天': { pronunciation: 'tiān', meaning: '天空、上天', oracleForm: '天' },
-            '地': { pronunciation: 'dì', meaning: '大地、地面', oracleForm: '地' }
+            '地': { pronunciation: 'dì', meaning: '大地、地面', oracleForm: '地' },
+            '目': { pronunciation: 'mù', meaning: '眼睛、目标', oracleForm: '目' }
         };
     }
     
