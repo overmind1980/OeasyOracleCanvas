@@ -1,8 +1,9 @@
 // 配置常量
 const FONT_CONFIG = {
-    primary: 'FangZhengOracle',
-    secondary: 'HYChenTiJiaGuWen',
-    tertiary: 'ZhongYanYuan'
+  primary: 'FangZhengOracle',
+  secondary: 'HYChenTiJiaGuWen',
+  tertiary: 'ZhongYanYuan',
+  quaternary: 'OeasyOracle'
 };
 
 const STYLE_CONFIG = {
@@ -113,20 +114,211 @@ class FontLoader {
     }
     
     getFontPriority() {
-        return [FONT_CONFIG.primary, FONT_CONFIG.secondary, FONT_CONFIG.tertiary];
+        return [FONT_CONFIG.primary, FONT_CONFIG.secondary, FONT_CONFIG.tertiary, FONT_CONFIG.quaternary];
+    }
+    
+    // 检测特定字符是否存在于某个字体中
+    async checkCharacterInFont(character, fontName) {
+        // 确保字体已加载
+        if (!await this.loadFont(fontName)) {
+            return false;
+        }
+        
+        // 创建临时canvas来检测字符
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 200;
+        canvas.height = 200;
+        
+        // 清除画布
+        ctx.clearRect(0, 0, 200, 200);
+        ctx.fillStyle = 'white';
+        ctx.fillRect(0, 0, 200, 200);
+        
+        // 使用目标字体绘制字符
+        ctx.font = `72px "${fontName}"`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = 'black';
+        ctx.fillText(character, 100, 100);
+        
+        // 获取目标字体的像素数据
+        const targetImageData = ctx.getImageData(0, 0, 200, 200);
+        
+        // 清除画布，使用fallback字体绘制相同字符
+        ctx.clearRect(0, 0, 200, 200);
+        ctx.fillStyle = 'white';
+        ctx.fillRect(0, 0, 200, 200);
+        
+        ctx.font = `72px serif`; // 使用系统默认字体
+        ctx.fillStyle = 'black';
+        ctx.fillText(character, 100, 100);
+        
+        // 获取fallback字体的像素数据
+        const fallbackImageData = ctx.getImageData(0, 0, 200, 200);
+        
+        // 比较两个图像数据
+        const targetData = targetImageData.data;
+        const fallbackData = fallbackImageData.data;
+        
+        let differences = 0;
+        let totalPixels = 0;
+        
+        for (let i = 0; i < targetData.length; i += 4) {
+            const targetAlpha = targetData[i + 3];
+            const fallbackAlpha = fallbackData[i + 3];
+            
+            // 只比较有内容的像素
+            if (targetAlpha > 0 || fallbackAlpha > 0) {
+                totalPixels++;
+                
+                const targetR = targetData[i];
+                const targetG = targetData[i + 1];
+                const targetB = targetData[i + 2];
+                
+                const fallbackR = fallbackData[i];
+                const fallbackG = fallbackData[i + 1];
+                const fallbackB = fallbackData[i + 2];
+                
+                // 计算颜色差异
+                const colorDiff = Math.abs(targetR - fallbackR) + 
+                                Math.abs(targetG - fallbackG) + 
+                                Math.abs(targetB - fallbackB) + 
+                                Math.abs(targetAlpha - fallbackAlpha);
+                
+                if (colorDiff > 10) {
+                    differences++;
+                }
+            }
+        }
+        
+        // 如果差异像素超过总像素的3%，认为字体包含该字符
+         const hasCharacter = totalPixels > 0 && (differences / totalPixels) > 0.03;
+        
+        console.log(`字体 ${fontName} 字符 '${character}' 检测: 总像素=${totalPixels}, 差异像素=${differences}, 差异率=${totalPixels > 0 ? (differences/totalPixels*100).toFixed(2) : 0}%, 结果=${hasCharacter}`);
+        
+        return hasCharacter;
+    }
+    
+    // 获取字体对字符的适配分数（差异率百分比）
+    async getCharacterScore(character, fontName) {
+        // 确保字体已加载
+        if (!await this.loadFont(fontName)) {
+            return 0;
+        }
+        
+        // 创建临时canvas来检测字符
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 200;
+        canvas.height = 200;
+        
+        // 清除画布
+        ctx.clearRect(0, 0, 200, 200);
+        ctx.fillStyle = 'white';
+        ctx.fillRect(0, 0, 200, 200);
+        
+        // 使用目标字体绘制字符
+        ctx.font = `72px "${fontName}"`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = 'black';
+        ctx.fillText(character, 100, 100);
+        
+        // 获取目标字体的像素数据
+        const targetImageData = ctx.getImageData(0, 0, 200, 200);
+        
+        // 清除画布，使用fallback字体绘制相同字符
+        ctx.clearRect(0, 0, 200, 200);
+        ctx.fillStyle = 'white';
+        ctx.fillRect(0, 0, 200, 200);
+        
+        ctx.font = `72px serif`; // 使用系统默认字体
+        ctx.fillStyle = 'black';
+        ctx.fillText(character, 100, 100);
+        
+        // 获取fallback字体的像素数据
+        const fallbackImageData = ctx.getImageData(0, 0, 200, 200);
+        
+        // 比较两个图像数据
+        const targetData = targetImageData.data;
+        const fallbackData = fallbackImageData.data;
+        
+        let differences = 0;
+        let totalPixels = 0;
+        
+        for (let i = 0; i < targetData.length; i += 4) {
+            const targetAlpha = targetData[i + 3];
+            const fallbackAlpha = fallbackData[i + 3];
+            
+            // 只比较有内容的像素
+            if (targetAlpha > 0 || fallbackAlpha > 0) {
+                totalPixels++;
+                
+                const targetR = targetData[i];
+                const targetG = targetData[i + 1];
+                const targetB = targetData[i + 2];
+                
+                const fallbackR = fallbackData[i];
+                const fallbackG = fallbackData[i + 1];
+                const fallbackB = fallbackData[i + 2];
+                
+                // 计算颜色差异
+                const colorDiff = Math.abs(targetR - fallbackR) + 
+                                Math.abs(targetG - fallbackG) + 
+                                Math.abs(targetB - fallbackB) + 
+                                Math.abs(targetAlpha - fallbackAlpha);
+                
+                if (colorDiff > 10) {
+                    differences++;
+                }
+            }
+        }
+        
+        // 返回差异率百分比作为分数
+        const score = totalPixels > 0 ? (differences / totalPixels) * 100 : 0;
+        return score;
+    }
+    
+    // 为特定字符获取可用字体
+    async getAvailableFontForCharacter(character) {
+        const fonts = this.getFontPriority();
+        
+        console.log(`正在为字符 '${character}' 检测字体...`);
+        
+        let bestFont = null;
+        let bestScore = 0;
+        
+        for (const font of fonts) {
+            const score = await this.getCharacterScore(character, font);
+            console.log(`字体 ${font} 对字符 '${character}' 的适配分数: ${score.toFixed(2)}%`);
+            
+            if (score > bestScore) {
+                bestScore = score;
+                bestFont = font;
+            }
+        }
+        
+        if (bestFont && bestScore > 3) {
+            console.log(`选择字体: ${bestFont} (分数: ${bestScore.toFixed(2)}%)`);
+            return bestFont;
+        }
+        
+        console.log(`所有甲骨文字体都不适合字符 '${character}'，使用默认字体 serif`);
+        // 如果所有甲骨文字体都不包含该字符，返回默认字体
+        return 'serif';
     }
     
     async getAvailableFont() {
         const fonts = this.getFontPriority();
         
         for (const font of fonts) {
-            const loaded = await this.loadFont(font);
-            if (loaded) {
+            if (await this.loadFont(font)) {
                 return font;
             }
         }
         
-        console.warn('所有甲骨文字体都不可用，使用默认字体');
+        // 如果所有字体都加载失败，返回默认字体
         return 'serif';
     }
 }
@@ -998,7 +1190,8 @@ class CanvasDrawing {
     async redrawOracleText() {
         if (!appState.currentChar) return;
         
-        const font = await fontLoader.getAvailableFont();
+        // 使用字符级别的字体检测
+        const font = await fontLoader.getAvailableFontForCharacter(appState.currentChar.oracleForm);
         this.drawOracleText(appState.currentChar.oracleForm, font);
         this.redrawStrokes();
     }
@@ -1026,7 +1219,9 @@ class CharacterInfo {
             '月': { pronunciation: 'yuè', meaning: '月亮、月份', oracleForm: '月' },
             '天': { pronunciation: 'tiān', meaning: '天空、上天', oracleForm: '天' },
             '地': { pronunciation: 'dì', meaning: '大地、地面', oracleForm: '地' },
-            '目': { pronunciation: 'mù', meaning: '眼睛、目标', oracleForm: '目' }
+            '目': { pronunciation: 'mù', meaning: '眼睛、目标', oracleForm: '目' },
+            '龟': { pronunciation: 'guī', meaning: '乌龟、龟甲', oracleForm: '龟' },
+            '疢': { pronunciation: 'chèn', meaning: '疾病、病痛', oracleForm: '疢' }
         };
     }
     
@@ -1095,7 +1290,7 @@ async function initApp() {
 }
 
 // 处理文本输入
-function handleTextInput(e) {
+async function handleTextInput(e) {
     const text = e.target.value.trim();
     
     if (text) {
@@ -1116,9 +1311,12 @@ function handleTextInput(e) {
             // 更新UI
             updateCharacterDisplay();
             
-            // 绘制甲骨文
+            // 绘制甲骨文 - 使用字符级别的字体检测
             if (appState.fontLoaded) {
-                canvasDrawing.drawOracleText(charInfo.oracleForm, appState.availableFont);
+                // 为当前字符找到最合适的字体
+                const bestFont = await fontLoader.getAvailableFontForCharacter(charInfo.oracleForm);
+                console.log(`字符 '${charInfo.oracleForm}' 使用字体: ${bestFont}`);
+                canvasDrawing.drawOracleText(charInfo.oracleForm, bestFont);
             }
             
             // 重置绘制状态
