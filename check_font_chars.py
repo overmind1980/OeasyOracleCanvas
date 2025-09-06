@@ -35,7 +35,7 @@ def main():
     # 字体文件路径
     font_files = [
         'fonts/FangZhengOracle.ttf',
-        'fonts/HYChenTiJiaGuWen.ttf', 
+     
         'fonts/OeasyOracle.ttf',
         'fonts/ZhongYanYuan.ttf'
     ]

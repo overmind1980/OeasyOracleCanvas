@@ -2,7 +2,8 @@
 const FONT_CONFIG = {
     primary: 'FangZhengOracle',
     secondary: 'ZhongYanYuan',
-    tertiary: 'OeasyOracle'
+    tertiary: 'OeasyOracle',
+    quaternary: 'HYChenTiJiaGuWen'
 };
 
 const STYLE_CONFIG = {
@@ -10,7 +11,7 @@ const STYLE_CONFIG = {
     oracleColor: '#808080',
     brushColor: '#000000',
     backgroundColor: '#F5DEB3',
-    brushSize: 18,  // 增加笔触大小，让画笔更粗更明显
+    brushSize: 24,  // 进一步增加笔触大小，让画笔更粗更明显
     completionThreshold: 0.45  // 设置阈值为45%
 };
 
@@ -113,7 +114,7 @@ class FontLoader {
     }
     
     getFontPriority() {
-        return [FONT_CONFIG.primary, FONT_CONFIG.secondary, FONT_CONFIG.tertiary];
+        return [FONT_CONFIG.primary, FONT_CONFIG.secondary, FONT_CONFIG.tertiary, FONT_CONFIG.quaternary];
     }
     
     // 检测特定字符是否存在于某个字体中
@@ -286,149 +287,27 @@ class FontLoader {
         return score;
     }
     
-    // 为特定字符获取可用字体
+    // 为字符获取可用字体 - 统一的甲骨文字体选择策略
     async getAvailableFontForCharacter(character) {
         const fonts = this.getFontPriority();
         
-        console.log(`\n=== 开始为字符 '${character}' 检测字体 ===`);
-        console.log('字体优先级顺序:', fonts);
+        console.log(`🔍 为字符 '${character}' 检测字体加载情况`);
         
-        // 特殊处理："手"字强制使用OeasyOracle字体
-        if (character === '手') {
-            console.log('🎯 检测到"手"字，强制使用OeasyOracle字体');
-            const targetFont = 'OeasyOracle';
-            const fontLoaded = await this.loadFont(targetFont);
-            if (fontLoaded) {
-                console.log(`✅ 强制选择字体: ${targetFont} ("手"字专用)`);
-                console.log(`=== 字体检测完成 ===\n`);
-                return targetFont;
-            } else {
-                console.log(`❌ OeasyOracle字体加载失败，继续常规检测流程`);
-            }
-        }
-        
-        // 特殊处理："金"字强制使用甲骨文字体
-        if (character === '金') {
-            console.log('🎯 检测到"金"字，强制使用甲骨文字体');
-            // 按优先级尝试甲骨文字体
-            const oracleFonts = ['FangZhengOracle', 'ZhongYanYuan', 'OeasyOracle'];
-            for (const font of oracleFonts) {
-                const fontLoaded = await this.loadFont(font);
-                if (fontLoaded) {
-                    const score = await this.getCharacterScore(character, font);
-                    console.log(`字体 ${font} 对"金"字的适配分数: ${score.toFixed(2)}%`);
-                    if (score > 0.5) { // 降低阈值确保甲骨文字体被使用
-                        console.log(`✅ 强制选择字体: ${font} ("金"字专用)`);
-                        console.log(`=== 字体检测完成 ===\n`);
-                        return font;
-                    }
-                }
-            }
-            console.log(`⚠️ 所有甲骨文字体都不适合"金"字，使用第一个可用的甲骨文字体`);
-            // 如果分数都很低，仍然强制使用第一个可用的甲骨文字体
-            for (const font of oracleFonts) {
-                if (await this.loadFont(font)) {
-                    console.log(`✅ 强制选择字体: ${font} ("金"字专用，忽略分数)`);
-                    console.log(`=== 字体检测完成 ===\n`);
-                    return font;
-                }
-            }
-        }
-        
-        // 特殊处理："地"字强制使用甲骨文字体
-        if (character === '地') {
-            console.log('🎯 检测到"地"字，强制使用甲骨文字体');
-            // 按优先级尝试甲骨文字体
-            const oracleFonts = ['FangZhengOracle', 'ZhongYanYuan', 'OeasyOracle'];
-            for (const font of oracleFonts) {
-                const fontLoaded = await this.loadFont(font);
-                if (fontLoaded) {
-                    const score = await this.getCharacterScore(character, font);
-                    console.log(`字体 ${font} 对"地"字的适配分数: ${score.toFixed(2)}%`);
-                    if (score > 0.1) { // 使用更低的阈值
-                        console.log(`✅ 强制选择字体: ${font} ("地"字专用)`);
-                        console.log(`=== 字体检测完成 ===\n`);
-                        return font;
-                    }
-                }
-            }
-            console.log(`⚠️ 所有甲骨文字体都不适合"地"字，使用第一个可用的甲骨文字体`);
-            // 如果分数都很低，仍然强制使用第一个可用的甲骨文字体
-            for (const font of oracleFonts) {
-                if (await this.loadFont(font)) {
-                    console.log(`✅ 强制选择字体: ${font} ("地"字专用，忽略分数)`);
-                    console.log(`=== 字体检测完成 ===\n`);
-                    return font;
-                }
-            }
-        }
-
-        // 特殊处理："马"字强制使用甲骨文字体
-        if (character === '马') {
-            console.log('🎯 检测到"马"字，强制使用甲骨文字体');
-            // 直接尝试OeasyOracle字体，因为它通常包含更多甲骨文字符
-            const oracleFonts = ['OeasyOracle', 'FangZhengOracle', 'ZhongYanYuan', 'HYChenTiJiaGuWen'];
-            for (const font of oracleFonts) {
-                const fontLoaded = await this.loadFont(font);
-                if (fontLoaded) {
-                    console.log(`✅ 强制选择字体: ${font} ("马"字专用，完全忽略适配分数)`);
-                    console.log(`=== 字体检测完成 ===\n`);
-                    return font;
-                }
-            }
-            console.log(`⚠️ 所有甲骨文字体都无法加载，使用默认字体`);
-        }
-
-        // 特殊处理："甲"字强制使用甲骨文字体
-        if (character === '甲') {
-            console.log('🎯 检测到"甲"字，强制使用甲骨文字体');
-            // 直接尝试甲骨文字体，优先使用OeasyOracle
-            const oracleFonts = ['OeasyOracle', 'FangZhengOracle', 'ZhongYanYuan', 'HYChenTiJiaGuWen'];
-            for (const font of oracleFonts) {
-                const fontLoaded = await this.loadFont(font);
-                if (fontLoaded) {
-                    console.log(`✅ 强制选择字体: ${font} ("甲"字专用，完全忽略适配分数)`);
-                    console.log(`=== 字体检测完成 ===\n`);
-                    return font;
-                }
-            }
-            console.log(`⚠️ 所有甲骨文字体都无法加载，使用默认字体`);
-        }
-        
-        // 按优先级顺序检查字体，返回第一个可用的字体
+        // 统一的甲骨文字体选择逻辑 - 按配置的优先级顺序选择第一个可用的字体
         for (let i = 0; i < fonts.length; i++) {
             const font = fonts[i];
-            console.log(`\n检测字体 ${i + 1}/${fonts.length}: ${font}`);
-            
-            // 检查字体是否已加载
             const fontLoaded = await this.loadFont(font);
-            console.log(`字体 ${font} 加载状态:`, fontLoaded);
             
-            if (!fontLoaded) {
-                console.log(`字体 ${font} 加载失败，跳过`);
-                continue;
-            }
-            
-            const score = await this.getCharacterScore(character, font);
-            console.log(`字体 ${font} 对字符 '${character}' 的适配分数: ${score.toFixed(2)}%`);
-            
-            // 设置字体适配阈值（降低阈值让更多汉字使用甲骨文字体）
-            const threshold = 0.1; // 大幅降低阈值以确保甲骨文字体能被使用
-            
-            // 如果字体有一定的适配度，就使用它（按优先级顺序）
-            if (score > threshold) {
-                console.log(`✅ 选择字体: ${font} (分数: ${score.toFixed(2)}%)`);
-                console.log(`=== 字体检测完成 ===\n`);
+            if (fontLoaded) {
+                console.log(`✅ 字符 '${character}' 选择字体: ${font}`);
                 return font;
             } else {
-                console.log(`❌ 字体 ${font} 分数过低 (${score.toFixed(2)}%)，继续检测下一个字体`);
+                console.log(`❌ 字符 '${character}' 字体 ${font} 加载失败`);
             }
         }
         
-        console.log(`\n⚠️ 所有甲骨文字体都不适合字符 '${character}'，使用默认字体 serif`);
-        console.log(`=== 字体检测完成 ===\n`);
-        // 如果所有甲骨文字体都不包含该字符，返回默认字体
-        return 'serif';
+        console.warn(`❌ 字符 '${character}' 所有甲骨文字体都无法加载，使用第一个字体作为回退`);
+        return FONT_CONFIG.primary;
     }
     
     async getAvailableFont() {
@@ -440,8 +319,8 @@ class FontLoader {
             }
         }
         
-        // 如果所有字体都加载失败，返回默认字体
-        return 'serif';
+        // 如果所有字体都加载失败，返回第一个甲骨文字体作为回退
+        return FONT_CONFIG.primary;
     }
 }
 
@@ -458,6 +337,7 @@ class CanvasDrawing {
         this.lastDrawPoint = null; // 记录上一个绘制点
         this.drawThrottle = 0; // 绘制节流计时器
         this.drawThrottleDelay = 16; // 约60fps的绘制频率
+        this.hasUserInteracted = false; // 用户交互标志，防止页面加载时意外触发庆祝
         this.setupCanvas();
         this.bindEvents();
         this.startFlickerAnimation();
@@ -521,6 +401,9 @@ class CanvasDrawing {
                 console.log('警告：window.particleSystem不存在');
             }
             
+            // 开始播放写字音效（触摸事件）
+            startWritingSound();
+            
             const mouseEvent = new MouseEvent('mousedown', {
                 clientX: touch.clientX,
                 clientY: touch.clientY
@@ -536,21 +419,27 @@ class CanvasDrawing {
                 clientY: touch.clientY
             });
             
-            // 更新粒子发射位置
-            if (window.particleSystem && this.isDrawing) {
-                console.log('触屏移动，更新粒子位置:', pos.x, pos.y);
-                window.particleSystem.updatePosition(pos.x, pos.y);
-            }
-            
             // 直接处理触摸移动事件，确保绘制
             if (this.isDrawing || this.isHoverDrawing) {
                 const point = new Point(pos.x, pos.y);
                 const isInOracleArea = this.isPointInOracleText(pos.x, pos.y);
                 
-                if (this.isDrawing) {
+                if (this.isDrawing && isInOracleArea) {
                     this.currentStroke.push(point);
-                    if (isInOracleArea && this.currentStroke.length > 1) {
+                    if (this.currentStroke.length > 1) {
                         this.drawBrushStroke([this.currentStroke[this.currentStroke.length - 2], point]);
+                        
+                        // 在实际绘制位置更新粒子发射位置
+                        if (window.particleSystem) {
+                            console.log('触屏移动绘制，更新粒子位置:', pos.x, pos.y);
+                            window.particleSystem.updatePosition(pos.x, pos.y);
+                        }
+                        
+                        // 确保写字音效在触摸移动时持续播放
+                        if (slashAudio && slashAudio.paused) {
+                            console.log('触屏移动绘制时重新启动写字音效');
+                            startWritingSound();
+                        }
                     }
                 } else if (isInOracleArea && this.lastDrawPoint) {
                     const distance = Math.sqrt(
@@ -562,6 +451,18 @@ class CanvasDrawing {
                         this.currentStroke.push(point);
                         this.drawBrushStroke([this.lastDrawPoint, point]);
                         this.lastDrawPoint = point;
+                        
+                        // 在实际绘制位置更新粒子发射位置
+                        if (window.particleSystem) {
+                            console.log('触屏悬停绘制，更新粒子位置:', pos.x, pos.y);
+                            window.particleSystem.updatePosition(pos.x, pos.y);
+                        }
+                        
+                        // 确保写字音效在触摸悬停绘制时持续播放
+                        if (slashAudio && slashAudio.paused) {
+                            console.log('触屏悬停绘制时重新启动写字音效');
+                            startWritingSound();
+                        }
                     }
                 }
             }
@@ -583,6 +484,9 @@ class CanvasDrawing {
                 window.particleSystem.stopEmission();
             }
             
+            // 停止写字音效（触摸事件）
+            stopWritingSound();
+            
             const mouseEvent = new MouseEvent('mouseup', {});
             this.canvas.dispatchEvent(mouseEvent);
         });
@@ -596,6 +500,9 @@ class CanvasDrawing {
                 window.particleSystem.stopEmission();
             }
             
+            // 停止写字音效（触摸事件）
+            stopWritingSound();
+            
             const mouseEvent = new MouseEvent('mouseup', {});
             this.canvas.dispatchEvent(mouseEvent);
         });
@@ -608,14 +515,58 @@ class CanvasDrawing {
     
     getEventPos(e) {
         const rect = this.canvas.getBoundingClientRect();
+        
+        // 计算相对于canvas显示区域的坐标
+        let x = e.clientX - rect.left;
+        let y = e.clientY - rect.top;
+        
+        // Firefox浏览器特殊处理：考虑页面滚动和缩放
+        const scrollX = window.pageXOffset || document.documentElement.scrollLeft || 0;
+        const scrollY = window.pageYOffset || document.documentElement.scrollTop || 0;
+        
+        // 获取canvas的实际显示尺寸
+        const canvasDisplayWidth = this.canvas.offsetWidth;
+        const canvasDisplayHeight = this.canvas.offsetHeight;
+        
+        // 获取canvas的内部尺寸（考虑设备像素比）
+        const dpr = window.devicePixelRatio || 1;
+        const canvasInternalWidth = this.canvas.width / dpr;
+        const canvasInternalHeight = this.canvas.height / dpr;
+        
+        // 计算缩放比例
+        const scaleX = canvasInternalWidth / canvasDisplayWidth;
+        const scaleY = canvasInternalHeight / canvasDisplayHeight;
+        
+        // 应用缩放比例来修正坐标
+        x = x * scaleX;
+        y = y * scaleY;
+        
+        // Firefox特殊修正：处理触摸事件的坐标偏移
+        if (navigator.userAgent.toLowerCase().indexOf('firefox') > -1) {
+            // 检查是否为触摸事件（通过检查事件类型或触摸属性）
+            const isTouchEvent = e.type && e.type.startsWith('touch');
+            if (isTouchEvent || (e.clientX !== undefined && e.touches)) {
+                // Firefox触摸事件坐标修正
+                const computedStyle = window.getComputedStyle(this.canvas);
+                const paddingLeft = parseFloat(computedStyle.paddingLeft) || 0;
+                const paddingTop = parseFloat(computedStyle.paddingTop) || 0;
+                const borderLeft = parseFloat(computedStyle.borderLeftWidth) || 0;
+                const borderTop = parseFloat(computedStyle.borderTopWidth) || 0;
+                
+                x -= (paddingLeft + borderLeft);
+                y -= (paddingTop + borderTop);
+            }
+        }
+        
         return {
-            x: e.clientX - rect.left,
-            y: e.clientY - rect.top
+            x: x,
+            y: y
         };
     }
     
     startDrawing(e) {
         this.isDrawing = true;
+        this.hasUserInteracted = true; // 标记用户已开始交互
         const pos = this.getEventPos(e);
         const point = new Point(pos.x, pos.y);
         this.currentStroke = [point];
@@ -675,22 +626,39 @@ class CanvasDrawing {
          
          // 只有在鼠标按下时才进行绘制
          if (this.isDrawing && isInOracleArea) {
-             // 更新粒子发射位置
-             if (window.particleSystem) {
-                 window.particleSystem.updatePosition(pos.x, pos.y);
-             }
-             
              if (this.lastDrawPoint) {
                  // 立即绘制每个移动点，不使用距离阈值限制
                  this.currentStroke.push(point);
                  this.drawBrushStroke([this.lastDrawPoint, point]);
                  this.lastDrawPoint = point;
+                 
+                 // 在实际绘制位置更新粒子发射位置
+                 if (window.particleSystem) {
+                     window.particleSystem.updatePosition(pos.x, pos.y);
+                 }
+                 
+                 // 确保写字音效在鼠标移动时持续播放
+                 if (slashAudio && slashAudio.paused) {
+                     console.log('鼠标移动绘制时重新启动写字音效');
+                     startWritingSound();
+                 }
              } else {
                  // 如果没有lastDrawPoint，直接添加点并设置为lastDrawPoint
                  this.currentStroke.push(point);
                  this.lastDrawPoint = point;
                  // 立即绘制起始点
                  this.drawSinglePoint(point);
+                 
+                 // 在起始点位置更新粒子发射位置
+                 if (window.particleSystem) {
+                     window.particleSystem.updatePosition(pos.x, pos.y);
+                 }
+                 
+                 // 确保写字音效在起始点播放
+                 if (slashAudio && slashAudio.paused) {
+                     console.log('鼠标移动起始点重新启动写字音效');
+                     startWritingSound();
+                 }
              }
          }
      }
@@ -787,26 +755,27 @@ class CanvasDrawing {
         if (window.innerHeight > window.innerWidth) {
             console.log(`📱 检测到竖屏模式`);
             // 竖屏模式：使用更大的字体比例，增大显示效果
-            fontSizeRatio = 0.92;
+            fontSizeRatio = 1.1; // 增加到1.1
             if (window.innerWidth <= 480) {
-                fontSizeRatio = 0.88; // 小屏竖屏，增大字体
+                fontSizeRatio = 1.05; // 小屏竖屏，增大字体
                 console.log(`📱 小屏竖屏模式，字体比例: ${fontSizeRatio}`);
             } else if (window.innerWidth <= 768) {
-                fontSizeRatio = 0.90; // 中屏竖屏，增大字体
+                fontSizeRatio = 1.08; // 中屏竖屏，增大字体
                 console.log(`📱 中屏竖屏模式，字体比例: ${fontSizeRatio}`);
             } else {
                 console.log(`📱 大屏竖屏模式，字体比例: ${fontSizeRatio}`);
             }
         } else {
             console.log(`📱 检测到横屏模式`);
-            // 横屏模式：保持原有逻辑
+            // 横屏模式：也增大字体
             if (window.innerWidth <= 480) {
-                fontSizeRatio = 0.75;
+                fontSizeRatio = 0.9; // 增加小屏横屏字体
                 console.log(`📱 小屏横屏模式，字体比例: ${fontSizeRatio}`);
             } else if (window.innerWidth <= 768) {
-                fontSizeRatio = 0.78;
+                fontSizeRatio = 0.95; // 增加中屏横屏字体
                 console.log(`📱 中屏横屏模式，字体比例: ${fontSizeRatio}`);
             } else {
+                fontSizeRatio = 1.0; // 增加大屏横屏字体
                 console.log(`📱 大屏横屏模式，字体比例: ${fontSizeRatio}`);
             }
         }
@@ -814,11 +783,11 @@ class CanvasDrawing {
         // 在竖屏模式下，优先考虑画布的较小维度来确保字体适配
         let fontSize;
         if (window.innerHeight > window.innerWidth) {
-            // 竖屏：使用宽度作为主要参考，增大高度系数让字体更大
-            fontSize = Math.min(canvasWidth * fontSizeRatio, canvasHeight * 0.95);
-            console.log(`📏 竖屏字体大小计算: min(${canvasWidth} * ${fontSizeRatio}, ${canvasHeight} * 0.95) = ${fontSize}`);
+            // 竖屏：使用宽度作为主要参考，进一步增大高度系数让字体更大
+            fontSize = Math.min(canvasWidth * fontSizeRatio, canvasHeight * 0.98); // 增加到0.98
+            console.log(`📏 竖屏字体大小计算: min(${canvasWidth} * ${fontSizeRatio}, ${canvasHeight} * 0.98) = ${fontSize}`);
         } else {
-            // 横屏：使用原有逻辑
+            // 横屏：使用更大的字体比例
             fontSize = Math.min(canvasWidth, canvasHeight) * fontSizeRatio;
             console.log(`📏 横屏字体大小计算: min(${canvasWidth}, ${canvasHeight}) * ${fontSizeRatio} = ${fontSize}`);
         }
@@ -827,19 +796,12 @@ class CanvasDrawing {
         const time = Date.now() / 1000;
         const flickerOpacity = 0.7 + 0.3 * (Math.sin(time * 2) + 1) / 2; // 0.7-1.0之间变化，提高基础透明度
         
-        // 使用选定的最佳字体，如果没有指定则使用默认优先级
-        if (font && font !== 'serif') {
-            console.log(`🎨 使用指定字体绘制甲骨文: ${font}`);
-            console.log(`📝 绘制字符: '${text}', 字体大小: ${fontSize}px`);
-            console.log(`🎯 字体应用: "${font}", serif`);
-            this.ctx.font = `${fontSize}px "${font}", serif`;
-        } else {
-            console.log('🎨 使用默认字体优先级顺序绘制甲骨文');
-            console.log(`📝 绘制字符: '${text}', 字体大小: ${fontSize}px`);
-            console.log(`🎯 字体应用: "FangZhengOracle", "ZhongYanYuan", "OeasyOracle", serif`);
-            // 使用字体优先级顺序
-            this.ctx.font = `${fontSize}px "FangZhengOracle", "ZhongYanYuan", "OeasyOracle", serif`;
-        }
+        // 统一使用甲骨文字体优先级顺序
+        const fontPriority = fontLoader.getFontPriority();
+        const fontList = fontPriority.map(font => `"${font}"`).join(', ');
+        console.log(`📝 绘制字符: '${text}', 字体大小: ${fontSize}px`);
+        console.log(`🎯 字体应用: ${fontList}`);
+        this.ctx.font = `${fontSize}px ${fontList}`;
         // 使用高对比度的金黄色，与龟甲背景形成强烈对比
         this.ctx.fillStyle = `rgba(255, 215, 0, ${flickerOpacity})`; // 金黄色
         this.ctx.strokeStyle = `rgba(255, 140, 0, ${flickerOpacity})`; // 深橙色描边
@@ -873,6 +835,78 @@ class CanvasDrawing {
         };
         
         // 重绘已有的笔画
+        this.redrawStrokes();
+    }
+    
+    // 重新绘制文字（用于异步字体检测后的更新）
+    redrawTextWithFont() {
+        if (!appState.currentChar) return;
+        
+        const text = appState.currentChar.oracleForm;
+        const centerX = this.canvas.width / (window.devicePixelRatio || 1) / 2;
+        const centerY = this.canvas.height / (window.devicePixelRatio || 1) / 2;
+        
+        // 清除之前的文字区域
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        
+        // 计算合适的字体大小 - 响应式适配
+        const canvasWidth = this.canvas.width / (window.devicePixelRatio || 1);
+        const canvasHeight = this.canvas.height / (window.devicePixelRatio || 1);
+        
+        // 检测屏幕方向和尺寸，优化字体大小
+        const isPortrait = canvasHeight > canvasWidth;
+        const minDimension = Math.min(canvasWidth, canvasHeight);
+        const maxDimension = Math.max(canvasWidth, canvasHeight);
+        if (isPortrait) {
+            // 竖屏模式：字体相对较大，适合手机竖屏使用
+            fontSize = Math.min(minDimension * 0.6, maxDimension * 0.35, 280);
+        } else {
+            // 横屏模式：字体适中，适合平板和桌面使用
+            fontSize = Math.min(minDimension * 0.5, maxDimension * 0.25, 240);
+        }
+        
+        // 确保字体大小不会太小
+        fontSize = Math.max(fontSize, 80);
+        
+        const fontPriority = fontLoader.getFontPriority();
+        const fontList = fontPriority.map(font => `"${font}"`).join(', ');
+        
+        // 重新设置甲骨文字体
+        this.ctx.font = `${fontSize}px ${fontList}`;
+        
+        // 计算闪烁透明度
+        const time = Date.now() / 1000;
+        const flickerOpacity = 0.7 + 0.3 * (Math.sin(time * 2) + 1) / 2;
+        
+        // 设置文字样式
+        this.ctx.fillStyle = `rgba(255, 215, 0, ${flickerOpacity})`;
+        this.ctx.strokeStyle = `rgba(255, 140, 0, ${flickerOpacity})`;
+        this.ctx.lineWidth = 4;
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'middle';
+        
+        // 添加阴影效果
+        this.ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+        this.ctx.shadowBlur = 8;
+        this.ctx.shadowOffsetX = 3;
+        this.ctx.shadowOffsetY = 3;
+        
+        // 绘制文字
+        this.ctx.fillText(text, centerX, centerY);
+        this.ctx.shadowColor = 'transparent';
+        this.ctx.strokeText(text, centerX, centerY);
+        
+        // 重新计算文字边界
+        const metrics = this.ctx.measureText(text);
+        const fontSize = parseFloat(this.ctx.font.match(/\d+/)[0]);
+        this.oracleTextBounds = {
+            x: centerX - metrics.width / 2,
+            y: centerY - fontSize / 2,
+            width: metrics.width,
+            height: fontSize
+        };
+        
+        // 重绘笔画
         this.redrawStrokes();
     }
     
@@ -1031,30 +1065,57 @@ class CanvasDrawing {
     }
     
     updateProgress() {
-        if (!this.oracleTextBounds || !appState.currentChar) return;
+        if (!this.oracleTextBounds || !appState.currentChar) {
+            console.log('🚫 updateProgress: 缺少必要条件，跳过进度更新');
+            return;
+        }
+        
+        // 检查是否有实际的绘制内容
+        if (appState.drawing.strokes.length === 0) {
+            console.log('🚫 updateProgress: 没有绘制内容，进度保持为0');
+            appState.drawing.progress = 0;
+            this.updateProgressDisplay();
+            return;
+        }
         
         // 基于像素覆盖比例的进度计算
         const oracleTextPixels = this.calculateOracleTextPixels();
         const strokeCoveragePixels = this.calculateStrokeCoveragePixels();
         
+        console.log(`📊 进度计算详情: 甲骨文像素=${oracleTextPixels}, 覆盖像素=${strokeCoveragePixels}, 笔画数=${appState.drawing.strokes.length}`);
+        
         if (oracleTextPixels === 0) {
+            console.log('⚠️ 甲骨文像素为0，进度设为0');
+            appState.drawing.progress = 0;
+        } else if (strokeCoveragePixels === 0) {
+            console.log('⚠️ 覆盖像素为0，进度设为0');
             appState.drawing.progress = 0;
         } else {
             // 计算覆盖比例，但限制最大值为1
-            appState.drawing.progress = Math.min(strokeCoveragePixels / oracleTextPixels, 1);
+            const rawProgress = strokeCoveragePixels / oracleTextPixels;
+            appState.drawing.progress = Math.min(rawProgress, 1);
+            console.log(`📈 计算进度: ${strokeCoveragePixels}/${oracleTextPixels} = ${rawProgress.toFixed(4)} -> ${appState.drawing.progress.toFixed(4)}`);
         }
         
         // 更新进度显示
         this.updateProgressDisplay();
         
-        // 添加调试信息
-        console.log(`甲骨文像素: ${oracleTextPixels}, 覆盖像素: ${strokeCoveragePixels}, 覆盖比例: ${(appState.drawing.progress * 100).toFixed(1)}%, 阈值: ${(STYLE_CONFIG.completionThreshold * 100).toFixed(1)}%, 已完成: ${appState.drawing.isCompleted}`);
+        // 添加详细调试信息
+        console.log(`📊 最终进度状态: 覆盖比例=${(appState.drawing.progress * 100).toFixed(1)}%, 阈值=${(STYLE_CONFIG.completionThreshold * 100).toFixed(1)}%, 已完成=${appState.drawing.isCompleted}`);
         
-        // 检查是否达到完成阈值
-        if (appState.drawing.progress >= STYLE_CONFIG.completionThreshold && !appState.drawing.isCompleted) {
+        // 检查是否达到完成阈值 - 添加严格的安全检查
+        if (appState.drawing.progress >= STYLE_CONFIG.completionThreshold && 
+            !appState.drawing.isCompleted && 
+            appState.drawing.strokes.length > 0 && 
+            strokeCoveragePixels > 0 &&
+            oracleTextPixels > 0 &&
+            appState.currentChar &&
+            this.hasUserInteracted) { // 确保用户已经进行过交互
             appState.drawing.isCompleted = true;
-            console.log('触发撒花特效!');
+            console.log('🎉 触发撒花特效! 条件满足: 进度达标 + 未完成 + 有笔画 + 有覆盖 + 用户已交互');
             this.showCelebration();
+        } else if (appState.drawing.progress >= STYLE_CONFIG.completionThreshold) {
+            console.log(`🚫 不触发撒花: 已完成=${appState.drawing.isCompleted}, 笔画数=${appState.drawing.strokes.length}, 覆盖像素=${strokeCoveragePixels}, 用户交互=${this.hasUserInteracted}`);
         }
     }
     
@@ -1076,9 +1137,11 @@ class CanvasDrawing {
         // 保存当前绘制状态
         ctx.save();
         
-        // 设置进度文字样式
+        // 设置进度文字样式 - 使用甲骨文字体
         const fontSize = 24;
-        ctx.font = `bold ${fontSize}px Arial, sans-serif`;
+        const fontPriority = fontLoader.getFontPriority();
+        const fontList = fontPriority.map(font => `"${font}"`).join(', ');
+        ctx.font = `bold ${fontSize}px ${fontList}, serif`;
         ctx.fillStyle = '#FFD700'; // 金黄色
         ctx.strokeStyle = '#FF8C00'; // 深橙色描边
         ctx.lineWidth = 2;
@@ -1559,7 +1622,7 @@ async function initApp() {
     }
     
     // 并行加载字体、字符数据库和拼音映射配置
-    console.log('正在加载甲骨文字体、字符数据库和拼音映射配置...');
+
     const [availableFont] = await Promise.all([
         fontLoader.getAvailableFont(),
         characterInfo.loadCharacterDB(),
@@ -1580,13 +1643,12 @@ async function initApp() {
     // 处理URL参数（如果存在）
     const urlParams = new URLSearchParams(window.location.search);
     const charParam = urlParams.get('char') || urlParams.get('c'); // 支持两种参数名
+    
     if (charParam) {
-        console.log('🔗 检测到URL参数中的汉字:', charParam);
         textInput.value = charParam;
         
         // 延迟处理，确保字体完全加载
         setTimeout(() => {
-            console.log('🎯 开始处理URL参数字符显示');
             // 触发输入事件处理
             const event = new Event('input', { bubbles: true });
             textInput.dispatchEvent(event);
@@ -1594,7 +1656,6 @@ async function initApp() {
         
         // 自动朗读汉字
         setTimeout(async () => {
-            console.log('🔊 开始自动朗读URL参数字符:', charParam);
             await autoSpeakCharacter(charParam);
         }, 1000); // 延迟1秒确保页面完全加载
     }
@@ -1681,6 +1742,33 @@ function handleClear() {
 
 // 处理返回
 function handleBack() {
+    // 如果有当前字符，保存其年龄组信息
+    if (appState.currentChar && appState.currentChar.character) {
+        // 年龄段汉字数据（与index.html保持一致）
+        const ageCharacters = {
+            2: ['一', '二', '三', '人', '大', '小', '目', '手', '日', '月'],
+            3: ['四', '五', '六', '七', '八', '九', '十', '口', '耳', '心', '木', '火', '水', '土', '天', '上', '下', '金', '工', '厂'],
+            4: ['牛', '马', '羊', '犬', '鸟', '虫', '父', '母', '子', '女', '田', '老', '入', '东', '西', '南', '北', '白', '电', '刀', '弓', '矢', '网', '石', '兄', '自', '牙', '爪', '内', '外'],
+            5: ['户', '米', '禾', '豆', '瓜', '果', '花', '叶', '贝', '衣', '食', '行', '云', '雨', '雪', '风', '气', '力', '竹', '丝', '血', '骨', '肉', '皮', '毛', '身', '头', '足', '立', '见', '言', '止', '中', '弟', '青', '屮', '山', '川', '井', '鱼']
+        };
+        
+        // 找到当前字符所属的年龄组
+        const currentChar = appState.currentChar.character;
+        let currentAge = null;
+        for (const [age, characters] of Object.entries(ageCharacters)) {
+            if (characters.includes(currentChar)) {
+                currentAge = age;
+                break;
+            }
+        }
+        
+        // 保存当前年龄组到localStorage
+        if (currentAge) {
+            localStorage.setItem('currentAge', currentAge);
+            console.log(`返回时保存当前年龄组: ${currentAge}岁`);
+        }
+    }
+    
     window.location.href = 'index.html';
 }
 
@@ -1694,7 +1782,7 @@ async function loadPinyinMapping() {
         const response = await fetch(`./pinyinToCharacterMap.json?t=${Date.now()}`);
         if (response.ok) {
             const config = await response.json();
-            console.log('成功加载拼音映射配置:', config);
+    
             
             // 合并声母和韵母映射
             const mergedMapping = {
@@ -1704,25 +1792,20 @@ async function loadPinyinMapping() {
             
             // 更新全局映射表
             pinyinToCharacterMap = { ...pinyinToCharacterMap, ...mergedMapping };
-            console.log('更新后的拼音映射表:', pinyinToCharacterMap);
+    
         } else {
-            console.log('无法加载拼音映射配置文件，使用默认配置');
+    
         }
     } catch (error) {
-        console.log('加载拼音映射配置出错，使用默认配置:', error);
+
     }
 }
 
 // 拼音分解函数（混合策略：辅音映射汉字，元音直接发音）
 function decomposePinyin(pinyin, character = '') {
-    console.log('=== 拼音分解函数（混合发音策略）===');
-    console.log('输入拼音:', pinyin, '汉字:', character);
+
     
-    // 特殊处理"日"字：直接发音，不需要拼音分解
-    if (character === '日') {
-        console.log('特殊处理"日"字：直接发音，不分解拼音');
-        return []; // 返回空数组，只朗读"日"字本身
-    }
+
     
     // 检查拼音映射配置是否已加载
     if (!pinyinToCharacterMap || Object.keys(pinyinToCharacterMap).length === 0) {
@@ -1745,7 +1828,7 @@ function decomposePinyin(pinyin, character = '') {
     let result = [];
     let originalPinyin = pinyin.toLowerCase();
     
-    console.log('开始分解拼音:', originalPinyin);
+    
     
     // 分解声母和韵母
     let shengmu = '';
@@ -1912,8 +1995,7 @@ function decomposePinyin(pinyin, character = '') {
 
 // 语音合成功能（支持拼音分解朗读）
 async function speakChinese(text) {
-    console.log('=== 开始语音合成 ===');
-    console.log('尝试朗读汉字:', text);
+
     console.log('文本长度:', text.length);
     console.log('文本编码:', encodeURIComponent(text));
     console.log('当前时间:', new Date().toISOString());
@@ -1926,19 +2008,13 @@ async function speakChinese(text) {
     }
     
     // 检查语音引擎状态
-    console.log('speechSynthesis当前状态:');
-    console.log('- speaking:', speechSynthesis.speaking);
-    console.log('- pending:', speechSynthesis.pending);
-    console.log('- paused:', speechSynthesis.paused);
-    
-    // 获取可用语音列表
+
     const voices = speechSynthesis.getVoices();
-    console.log('可用语音数量:', voices.length);
     if (voices.length === 0) {
-        console.warn('⚠️ 语音列表为空，尝试等待语音加载...');
+
         // 等待语音加载
         speechSynthesis.onvoiceschanged = async () => {
-            console.log('语音列表已更新，重新尝试');
+    
             await performSpeechSynthesis(text);
         };
         // 设置超时，避免无限等待
@@ -1956,11 +2032,11 @@ async function speakChinese(text) {
 
 // 执行语音合成的核心逻辑
 async function performSpeechSynthesis(text) {
-    console.log('执行语音合成核心逻辑:', text);
+
     
     try {
         // 停止当前正在播放的语音
-        console.log('停止当前语音合成');
+    
         speechSynthesis.cancel();
         
         // 确保characterInfo已初始化并加载数据
@@ -1977,15 +2053,15 @@ async function performSpeechSynthesis(text) {
         
         // 等待一小段时间确保停止完成
         setTimeout(() => {
-            console.log('延迟后继续语音合成流程');
+    
             
             // 获取汉字的拼音信息
             let pinyinInfo = null;
             if (characterInfo && characterInfo.characterDB && characterInfo.characterDB[text]) {
                 pinyinInfo = characterInfo.characterDB[text].pronunciation;
-                console.log('✅ 找到拼音信息:', pinyinInfo);
+    
             } else {
-                console.log('❌ 未找到拼音信息');
+    
                 console.log('characterDB状态:', !!(characterInfo && characterInfo.characterDB));
                 console.log('characterInfo对象存在:', !!characterInfo);
                 if (characterInfo && characterInfo.characterDB) {
@@ -1998,11 +2074,11 @@ async function performSpeechSynthesis(text) {
             
             if (pinyinInfo) {
                 // 如果有拼音信息，先朗读拼音分解过程
-                console.log('✅ 调用拼音分解朗读');
+
                 speakPinyinDecomposition(text, pinyinInfo);
             } else {
                 // 如果没有拼音信息，直接朗读汉字
-                console.log('⚠️ 使用直接朗读汉字模式');
+
                 speakText(text, 0.4);
             }
         }, 100);
@@ -2019,38 +2095,37 @@ async function performSpeechSynthesis(text) {
 
 // 拼音分解朗读函数 - 直接发音拼音字母
 function speakPinyinDecomposition(character, pinyin) {
-    console.log('=== 拼音分解朗读开始（直接拼音发音版本）===');
-    console.log('汉字:', character, '拼音:', pinyin);
-    console.log('speechSynthesis状态 - speaking:', speechSynthesis.speaking, 'pending:', speechSynthesis.pending);
+
+
     
     // 确保语音合成完全停止
     speechSynthesis.cancel();
     
     // 分解拼音
     const decomposed = decomposePinyin(pinyin, character);
-    console.log('拼音分解结果:', decomposed);
+
     
     // 创建朗读序列：拼音分解 -> 汉字
     // 例如："去" -> ["七", "育", "去"]
     // 例如："六" -> ["了", "iù", "六"]
     // 最后必须发原汉字的音
     const sequence = [...decomposed, character];
-    console.log('完整朗读序列:', sequence);
-    console.log('注意：最后发音是原汉字:', character);
+
+
     
     let currentIndex = 0;
     
     function speakNext() {
-        console.log(`--- 朗读进度: ${currentIndex + 1}/${sequence.length} ---`);
-        console.log('当前speechSynthesis状态 - speaking:', speechSynthesis.speaking, 'pending:', speechSynthesis.pending);
+    
+    
         
         if (currentIndex >= sequence.length) {
-            console.log('=== 拼音分解朗读完成 ===');
+        
             return;
         }
         
         let textToSpeak = sequence[currentIndex];
-        console.log('当前朗读内容:', textToSpeak);
+
         
         // 如果是带声调的拼音字母，尝试使用映射表中的汉字
         if (pinyinToCharacterMap && typeof textToSpeak === 'string' && textToSpeak.length === 1 && /[āáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜ]/.test(textToSpeak)) {
@@ -2059,13 +2134,13 @@ function speakPinyinDecomposition(character, pinyin) {
                 console.log(`使用映射汉字发音: ${textToSpeak} -> ${mappedChar}`);
                 textToSpeak = mappedChar;
             } else {
-                console.log(`未找到映射，使用原始拼音: ${textToSpeak}`);
+    
             }
         }
         
         // 等待之前的语音完全停止
         if (speechSynthesis.speaking || speechSynthesis.pending) {
-            console.log('等待语音合成停止...');
+    
             setTimeout(speakNext, 100);
             return;
         }
@@ -2078,7 +2153,7 @@ function speakPinyinDecomposition(character, pinyin) {
         // 这样可以确保声音统一，避免男女声混合
         
         utterance.lang = 'zh-CN';
-        console.log(`使用中文语音引擎发音: ${textToSpeak}`);
+        
         
         // 为了确保语音一致性，尝试指定特定的中文语音
         const voices = speechSynthesis.getVoices();
@@ -2086,7 +2161,7 @@ function speakPinyinDecomposition(character, pinyin) {
         if (chineseVoices.length > 0) {
             // 优先使用第一个中文语音，确保所有发音使用同一个语音引擎
             utterance.voice = chineseVoices[0];
-            console.log(`指定语音: ${chineseVoices[0].name} (${chineseVoices[0].lang})`);
+            
         }
         
         // 设置语音参数
@@ -2096,12 +2171,12 @@ function speakPinyinDecomposition(character, pinyin) {
         
         // 朗读开始事件
         utterance.onstart = () => {
-            console.log('✓ 开始朗读:', textToSpeak);
+
         };
         
         // 朗读完成后继续下一个
         utterance.onend = () => {
-            console.log('✓ 朗读完成:', textToSpeak);
+
             currentIndex++;
             // 添加停顿
             console.log('等待500ms后继续下一个...');
@@ -2114,19 +2189,17 @@ function speakPinyinDecomposition(character, pinyin) {
             setTimeout(speakNext, 500);
         };
         
-        console.log('→ 调用speechSynthesis.speak:', textToSpeak);
+        
         speechSynthesis.speak(utterance);
         
         // 检查是否成功添加到队列
         setTimeout(() => {
-            console.log('语音添加后状态 - speaking:', speechSynthesis.speaking, 'pending:', speechSynthesis.pending);
+    
         }, 50);
     }
     
     // 延迟一点开始朗读序列，确保之前的语音已经停止
-    console.log('延迟200ms后开始朗读序列...');
     setTimeout(() => {
-        console.log('开始执行朗读序列');
         speakNext();
     }, 200);
 }
@@ -2156,8 +2229,7 @@ function speakText(text, rate = 0.6) {
 
 // 自动朗读汉字（处理浏览器限制）
 async function autoSpeakCharacter(char) {
-    console.log('=== 自动朗读汉字开始 ===');
-    console.log('准备自动朗读汉字:', char);
+
     console.log('当前页面URL:', window.location.href);
     console.log('是否HTTPS:', window.location.protocol === 'https:');
     console.log('speechSynthesis支持:', 'speechSynthesis' in window);
@@ -2170,35 +2242,26 @@ async function autoSpeakCharacter(char) {
     }
     
     // 检查语音引擎状态
-    console.log('speechSynthesis状态:');
-    console.log('- speaking:', speechSynthesis.speaking);
-    console.log('- pending:', speechSynthesis.pending);
-    console.log('- paused:', speechSynthesis.paused);
-    
-    // 获取可用语音列表
+
     const voices = speechSynthesis.getVoices();
-    console.log('可用语音数量:', voices.length);
     if (voices.length > 0) {
         const chineseVoices = voices.filter(v => v.lang.startsWith('zh'));
-        console.log('中文语音数量:', chineseVoices.length);
-        if (chineseVoices.length > 0) {
-            console.log('首选中文语音:', chineseVoices[0].name, chineseVoices[0].lang);
-        }
+
     } else {
-        console.warn('⚠️ 语音列表为空，可能还在加载中');
+
     }
     
     // 尝试直接朗读
-    console.log('尝试直接朗读...');
+    
     const success = await speakChinese(char);
     
     if (!success) {
-        console.log('❌ 直接朗读失败，可能需要用户交互');
+        
         setupUserInteractionTrigger(char);
         return false;
     }
     
-    console.log('✅ 自动朗读启动成功');
+    
     return true;
 }
 
@@ -2319,21 +2382,68 @@ function showSpeechError(message) {
 
 // 音频初始化函数
 function initAudio() {
-    console.log('初始化音频功能...');
+    console.log('🎵 初始化音频功能...');
     
     // 等待DOM完全准备好
     setTimeout(() => {
         // 获取音频元素
+        console.log('🔍 开始获取音频元素...');
+        console.log('DOM状态:', document.readyState);
+        console.log('所有audio元素:', document.querySelectorAll('audio'));
+        
         bgmAudio = document.getElementById('bgmAudio');
         passAudio = document.getElementById('passAudio');
         slashAudio = document.getElementById('slashAudio');
         volumeSlider = document.getElementById('volumeSlider');
         
-        console.log('音频元素获取结果:');
-        console.log('bgmAudio:', bgmAudio);
-        console.log('passAudio:', passAudio);
-        console.log('slashAudio:', slashAudio);
-        console.log('volumeSlider:', volumeSlider);
+        console.log('🎵 音频元素获取结果:');
+        console.log('bgmAudio:', bgmAudio, bgmAudio ? '✅' : '❌');
+        console.log('passAudio:', passAudio, passAudio ? '✅' : '❌');
+        console.log('slashAudio:', slashAudio, slashAudio ? '✅' : '❌');
+        console.log('volumeSlider:', volumeSlider, volumeSlider ? '✅' : '❌');
+        
+        // 检查音频文件路径
+        if (bgmAudio) console.log('bgmAudio src:', bgmAudio.src);
+        if (passAudio) console.log('passAudio src:', passAudio.src);
+        if (slashAudio) console.log('slashAudio src:', slashAudio.src);
+        
+        if (!bgmAudio || !passAudio || !slashAudio) {
+            console.error('❌ 音频元素未找到，检查HTML中的audio标签ID');
+            console.error('缺失的元素:', {
+                bgmAudio: !bgmAudio,
+                passAudio: !passAudio,
+                slashAudio: !slashAudio
+            });
+            return;
+        }
+        
+        // 设置音频属性
+        bgmAudio.loop = true;
+        bgmAudio.preload = 'auto';
+        passAudio.preload = 'auto';
+        slashAudio.preload = 'auto';
+        
+        // Firefox特定的音频上下文处理
+        let audioContext;
+        const isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+        
+        if (isFirefox && window.AudioContext) {
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                console.log('Firefox音频上下文已创建，状态:', audioContext.state);
+            } catch (e) {
+                console.log('音频上下文创建失败:', e);
+            }
+        }
+        
+        console.log('✅ 音频元素获取成功，设置属性完成');
+        console.log('设备信息:', {
+            userAgent: navigator.userAgent,
+            platform: navigator.platform,
+            isMobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent),
+            isTablet: /iPad|Android/i.test(navigator.userAgent) && !/Mobile/i.test(navigator.userAgent),
+            isFirefox: isFirefox
+        });
     
     if (bgmAudio && volumeSlider) {
         // 从localStorage恢复音量设置
@@ -2343,21 +2453,24 @@ function initAudio() {
         // 设置音量
         volumeSlider.value = volume;
         bgmAudio.volume = volume / 100;
+        if (passAudio) passAudio.volume = volume / 100;
+        if (slashAudio) slashAudio.volume = volume / 100;
         
         console.log('恢复音量设置:', volume);
         
-        // 尝试自动播放背景音乐
-        console.log('bgmAudio元素存在，当前音量:', bgmAudio.volume);
-        console.log('bgmAudio是否暂停:', bgmAudio.paused);
-        console.log('bgmAudio当前时间:', bgmAudio.currentTime);
+        // 检测是否为移动设备
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const isTablet = /iPad|Android/i.test(navigator.userAgent) && !/Mobile/i.test(navigator.userAgent);
         
-        const playPromise = bgmAudio.play();
-        if (playPromise !== undefined) {
-            playPromise.then(() => {
-                console.log('背景音乐自动播放成功');
-            }).catch(error => {
-                console.log('自动播放被阻止，需要用户交互后播放:', error);
-            });
+        console.log('设备检测结果:', { isMobile, isTablet });
+        
+        // 移动设备需要更严格的用户交互触发
+        if (isMobile || isTablet) {
+            console.log('检测到移动/平板设备，使用增强的音频播放策略');
+            setupMobileAudioStrategy();
+        } else {
+            // 桌面设备尝试自动播放
+            tryAutoPlayAudio();
         }
         
         // 音量滑块事件监听
@@ -2369,56 +2482,511 @@ function initAudio() {
             
             // 保存音量设置到localStorage
             localStorage.setItem('oracleAudioVolume', this.value);
+            console.log('音量调整为:', volume);
         });
         
-
-        
-        // 确保用户交互后能播放音频
-        const playBgmOnInteraction = function() {
-            if (bgmAudio && bgmAudio.paused) {
-                console.log('用户交互触发背景音乐播放');
-                bgmAudio.play().catch(e => console.log('播放失败:', e));
-            }
-        };
-        
-        // 多种用户交互事件监听
-        document.addEventListener('click', playBgmOnInteraction, { once: true });
-        document.addEventListener('touchstart', playBgmOnInteraction, { once: true });
-        document.addEventListener('keydown', playBgmOnInteraction, { once: true });
-        
         console.log('音频初始化完成');
+        
+        // 音效测试函数已移除，避免页面加载时意外播放音效
      }
      }, 100); // 延迟100ms确保DOM完全加载
 }
 
+// 音效测试函数
+function testAudioPlayback() {
+    console.log('🧪 开始音效测试...');
+    
+    // 检查音频文件路径
+    console.log('🔍 音频文件路径检查:');
+    if (slashAudio) {
+        console.log('slashAudio.src:', slashAudio.src);
+        console.log('slashAudio.currentSrc:', slashAudio.currentSrc);
+        console.log('slashAudio.readyState:', slashAudio.readyState);
+        console.log('slashAudio.networkState:', slashAudio.networkState);
+    }
+    
+    if (passAudio) {
+        console.log('passAudio.src:', passAudio.src);
+        console.log('passAudio.currentSrc:', passAudio.currentSrc);
+        console.log('passAudio.readyState:', passAudio.readyState);
+        console.log('passAudio.networkState:', passAudio.networkState);
+    }
+    
+    // 测试slash音效
+    console.log('🎵 测试slash音效...');
+    if (slashAudio) {
+        slashAudio.volume = 0.3;
+        slashAudio.play().then(() => {
+            console.log('✅ slash音效播放成功');
+            setTimeout(() => slashAudio.pause(), 1000);
+        }).catch(e => {
+            console.error('❌ slash音效播放失败:', e);
+        });
+    }
+    
+    // 测试庆祝音效 - 已禁用，只有在达到完成度时才播放
+    // setTimeout(() => {
+    //     console.log('🎉 测试庆祝音效...');
+    //     if (passAudio) {
+    //         console.log('passAudio当前状态:', {
+    //             volume: passAudio.volume,
+    //             paused: passAudio.paused,
+    //             readyState: passAudio.readyState,
+    //             networkState: passAudio.networkState,
+    //             src: passAudio.src,
+    //             muted: passAudio.muted
+    //         });
+    //         
+    //         // 确保音量不为0
+    //         if (passAudio.volume === 0) {
+    //             passAudio.volume = 0.3;
+    //             console.log('设置庆祝音效音量为0.3');
+    //         }
+    //         
+    //         passAudio.play().then(() => {
+    //             console.log('✅ 庆祝音效测试播放成功');
+    //         }).catch(e => {
+    //             console.error('❌ 庆祝音效测试播放失败:', e);
+    //         });
+    //     } else {
+    //         console.error('❌ passAudio元素不存在');
+    //     }
+    // }, 3000);
+}
+
+// 尝试自动播放音频（桌面设备）
+function tryAutoPlayAudio() {
+    console.log('🎵 尝试自动播放背景音乐...');
+    console.log('bgmAudio元素存在，当前音量:', bgmAudio.volume);
+
+    console.log('bgmAudio当前时间:', bgmAudio.currentTime);
+    
+    const isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+    
+    // 立即尝试播放
+    const attemptPlay = async () => {
+        try {
+            console.log('🚀 立即尝试播放音频...');
+            const playPromise = bgmAudio.play();
+            if (playPromise !== undefined) {
+                await playPromise;
+                console.log('✅ 背景音乐自动播放成功');
+                return true;
+            }
+        } catch (error) {
+            console.log('❌ 自动播放被阻止:', error.message);
+            return false;
+        }
+        return false;
+    };
+    
+    // Firefox特定的播放逻辑
+    if (isFirefox) {
+        console.log('检测到Firefox浏览器，使用增强播放策略');
+        
+        // 重新加载音频以确保Firefox兼容性
+        bgmAudio.load();
+        
+        // 等待音频加载完成后播放
+        const playFirefoxAudio = async () => {
+            try {
+                await new Promise((resolve, reject) => {
+                    bgmAudio.addEventListener('canplaythrough', resolve, { once: true });
+                    bgmAudio.addEventListener('error', reject, { once: true });
+                    setTimeout(reject, 3000); // 3秒超时
+                });
+                
+                const success = await attemptPlay();
+                if (!success) {
+                    setupUserInteractionTrigger();
+                }
+            } catch (error) {
+                console.log('Firefox音频播放失败，设置用户交互触发:', error);
+                setupUserInteractionTrigger();
+            }
+        };
+        
+        playFirefoxAudio();
+    } else {
+        // 其他浏览器的标准播放逻辑
+        attemptPlay().then(success => {
+            if (!success) {
+                console.log('设置用户交互触发');
+                setupUserInteractionTrigger();
+            }
+        });
+    }
+    
+    // 多次延迟重试机制
+    const retryDelays = [500, 1000, 2000];
+    retryDelays.forEach(delay => {
+        setTimeout(async () => {
+            if (bgmAudio.paused) {
+                console.log(`🔄 延迟${delay}ms后重试播放背景音乐...`);
+                const success = await attemptPlay();
+                if (!success && delay === 500) {
+                    // 第一次重试失败时设置用户交互触发
+                    setupUserInteractionTrigger();
+                }
+            }
+        }, delay);
+    });
+}
+
+// 设置移动设备音频策略
+function setupMobileAudioStrategy() {
+    console.log('设置移动设备音频播放策略');
+    
+    const isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+    
+    // 创建音频上下文（如果需要）
+    let audioContext = null;
+    try {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        console.log('音频上下文创建成功，状态:', audioContext.state);
+        
+        // Firefox特定处理
+        if (isFirefox) {
+            console.log('Firefox移动设备音频策略激活');
+        }
+    } catch (e) {
+        console.log('音频上下文创建失败:', e);
+    }
+    
+    // 设置用户交互触发
+    const playAudioOnInteraction = async function(event) {
+        console.log('移动设备用户交互触发音频播放:', event.type);
+        
+        // 激活音频上下文
+        if (audioContext && audioContext.state === 'suspended') {
+            try {
+                await audioContext.resume();
+                console.log('音频上下文已激活');
+            } catch (e) {
+                console.log('音频上下文激活失败:', e);
+            }
+        }
+        
+        // Firefox特定的音频播放处理
+        if (isFirefox && bgmAudio && bgmAudio.paused) {
+            console.log('Firefox移动设备音频播放策略');
+            try {
+                // 重新加载音频
+                bgmAudio.load();
+                
+                // 等待音频加载完成
+                await new Promise((resolve, reject) => {
+                    bgmAudio.addEventListener('canplaythrough', resolve, { once: true });
+                    bgmAudio.addEventListener('error', reject, { once: true });
+                    setTimeout(reject, 2000); // 2秒超时
+                });
+                
+                // 播放音频
+                await bgmAudio.play();
+                console.log('Firefox背景音乐播放成功');
+            } catch (e) {
+                console.log('Firefox背景音乐播放失败:', e);
+                // 重试机制
+                setTimeout(() => {
+                    bgmAudio.play().catch(e2 => console.log('Firefox背景音乐重试失败:', e2));
+                }, 1000);
+            }
+        } else if (bgmAudio && bgmAudio.paused) {
+            // 其他浏览器的标准播放逻辑
+            console.log('尝试播放背景音乐...');
+            bgmAudio.play().then(() => {
+                console.log('背景音乐播放成功');
+            }).catch(e => {
+                console.log('背景音乐播放失败:', e);
+                // 延迟重试
+                setTimeout(() => {
+                    bgmAudio.play().catch(e2 => console.log('背景音乐重试播放失败:', e2));
+                }, 500);
+            });
+        }
+        
+        // 预加载其他音效
+        if (passAudio) {
+            passAudio.load();
+            console.log('庆祝音效预加载完成');
+        }
+        if (slashAudio) {
+            slashAudio.load();
+            console.log('写字音效预加载完成');
+        }
+    };
+    
+    // 多种交互事件监听（移动设备专用）
+    const interactionEvents = ['touchstart', 'touchend', 'click', 'tap'];
+    interactionEvents.forEach(eventType => {
+        document.addEventListener(eventType, playAudioOnInteraction, { once: true, passive: true });
+    });
+    
+    // 页面可见性变化时重新激活音频
+    document.addEventListener('visibilitychange', function() {
+        if (!document.hidden && bgmAudio && bgmAudio.paused) {
+            console.log('页面重新可见，尝试恢复背景音乐');
+            bgmAudio.play().catch(e => console.log('页面可见时音乐播放失败:', e));
+        }
+    });
+    
+    console.log('移动设备音频策略设置完成');
+}
+
+// 设置用户交互触发（通用）
+function setupUserInteractionTrigger() {
+    
+    
+    let interactionTriggered = false;
+    
+    const playBgmOnInteraction = function(event) {
+        if (interactionTriggered) return;
+        interactionTriggered = true;
+        
+        console.log('👆 用户交互触发背景音乐播放:', event.type);
+        if (bgmAudio && bgmAudio.paused) {
+            bgmAudio.play().then(() => {
+                console.log('✅ 交互触发播放成功');
+            }).catch(e => {
+                console.log('❌ 交互触发播放失败:', e);
+                // 重试一次
+                setTimeout(() => {
+                    bgmAudio.play().catch(e2 => console.log('❌ 交互触发重试失败:', e2));
+                }, 100);
+            });
+        }
+        
+        // 移除所有事件监听器
+        interactionEvents.forEach(eventType => {
+            document.removeEventListener(eventType, playBgmOnInteraction);
+        });
+    };
+    
+    // 更多种用户交互事件监听
+    const interactionEvents = ['click', 'touchstart', 'touchend', 'keydown', 'mousedown', 'pointerdown', 'mousemove', 'scroll'];
+    interactionEvents.forEach(eventType => {
+        document.addEventListener(eventType, playBgmOnInteraction, { once: true, passive: true });
+    });
+}
+
 // 播放庆祝音效
 function playCelebrationAudio() {
+    console.log('🎉 尝试播放庆祝音效...');
+    
+    // 检查音频上下文状态
+    if (window.AudioContext || window.webkitAudioContext) {
+        try {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            console.log('🎵 音频上下文状态:', audioContext.state);
+            
+            // 如果音频上下文被暂停，尝试恢复
+            if (audioContext.state === 'suspended') {
+                audioContext.resume().then(() => {
+                    console.log('✅ 音频上下文已恢复');
+                }).catch(e => {
+                    console.error('❌ 音频上下文恢复失败:', e);
+                });
+            }
+        } catch (e) {
+            console.error('❌ 音频上下文检查失败:', e);
+        }
+    }
+    
+    // 检查用户交互状态
+    console.log('👆 用户交互状态检查:', {
+        hasUserInteracted: window.hasUserInteracted || false,
+        documentHidden: document.hidden,
+        visibilityState: document.visibilityState
+    });
+    
     if (passAudio) {
+        console.log('✅ passAudio元素存在');
+        console.log('📊 passAudio详细状态:', {
+            volume: passAudio.volume,
+            paused: passAudio.paused,
+            currentTime: passAudio.currentTime,
+            duration: passAudio.duration,
+            readyState: passAudio.readyState,
+            networkState: passAudio.networkState,
+            src: passAudio.src,
+            currentSrc: passAudio.currentSrc,
+            muted: passAudio.muted,
+            error: passAudio.error,
+            ended: passAudio.ended
+        });
+        
+        // 检查音频文件是否加载完成
+        if (passAudio.readyState < 2) {
+            console.log('⏳ 音频文件未完全加载，readyState:', passAudio.readyState);
+            // 尝试重新加载
+            passAudio.load();
+            console.log('🔄 重新加载音频文件');
+        }
+    
+        // 确保音量不为0
+        if (passAudio.volume === 0) {
+            const savedVolume = localStorage.getItem('oracleAudioVolume');
+            const volume = savedVolume ? Math.max(parseInt(savedVolume), 30) : 50; // 确保最小音量为30
+            passAudio.volume = volume / 100;
+            console.log('🔊 庆祝音效音量为0，重新设置为:', passAudio.volume);
+        }
+        
+        // 双重检查：如果音量仍然为0，强制设置为0.3
+        if (passAudio.volume === 0) {
+            passAudio.volume = 0.3;
+            console.log('🔊 强制设置庆祝音效音量为0.3（双重检查）');
+        }
+        
+        // 重置音频到开始位置
         passAudio.currentTime = 0;
-        passAudio.play().catch(e => console.log('庆祝音效播放失败:', e));
+        console.log('🔄 重置庆祝音频播放位置');
+        
+        // 检测移动设备
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const isTablet = /iPad|Android/i.test(navigator.userAgent) && !/Mobile/i.test(navigator.userAgent);
+        const isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+        
+        console.log('🔍 设备检测结果:', {
+            isMobile,
+            isTablet,
+            isFirefox,
+            userAgent: navigator.userAgent
+        });
+        
+        // 统一的播放函数，包含更强的错误处理
+        const attemptPlayCelebration = async (retryCount = 0) => {
+            const maxRetries = 3;
+            
+            try {
+                console.log(`🎵 尝试播放庆祝音效 (第${retryCount + 1}次)`);
+                
+                // 确保音频已准备好
+                if (passAudio.readyState < 2) {
+                    console.log('⏳ 等待音频加载完成...');
+                    await new Promise((resolve, reject) => {
+                        const timeout = setTimeout(() => reject(new Error('音频加载超时')), 3000);
+                        passAudio.addEventListener('canplaythrough', () => {
+                            clearTimeout(timeout);
+                            resolve();
+                        }, { once: true });
+                        passAudio.load();
+                    });
+                }
+                
+                // 尝试播放
+                const playPromise = passAudio.play();
+                if (playPromise !== undefined) {
+                    await playPromise;
+                    console.log('✅ 庆祝音效播放成功!');
+                    return true;
+                } else {
+                    throw new Error('passAudio.play()返回undefined');
+                }
+                
+            } catch (error) {
+                console.error(`❌ 庆祝音效播放失败 (第${retryCount + 1}次):`, error);
+                console.error('错误详情:', {
+                    name: error.name,
+                    message: error.message,
+                    code: error.code
+                });
+                
+                // 如果还有重试次数，则重试
+                if (retryCount < maxRetries) {
+                    const delay = (retryCount + 1) * 200; // 递增延迟
+                    console.log(`⏳ ${delay}ms后重试...`);
+                    
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    
+                    // 重新设置音频状态
+                    passAudio.currentTime = 0;
+                    if (passAudio.volume === 0) {
+                        const savedVolume = localStorage.getItem('oracleAudioVolume');
+                        const volume = savedVolume ? Math.max(parseInt(savedVolume), 30) : 50; // 确保最小音量为30
+                        passAudio.volume = volume / 100;
+                        // 双重检查
+                        if (passAudio.volume === 0) {
+                            passAudio.volume = 0.3;
+                        }
+                    }
+                    
+                    return attemptPlayCelebration(retryCount + 1);
+                } else {
+                    console.error('❌ 庆祝音效播放彻底失败，已达到最大重试次数');
+                    return false;
+                }
+            }
+        };
+        
+        // 执行播放
+        attemptPlayCelebration();
+    } else {
+        console.error('❌ passAudio元素不存在');
     }
 }
 
 // 开始写字音效
 function startWritingSound() {
-    console.log('尝试播放写字音效...');
+    console.log('🎵 尝试播放写字音效...');
     if (slashAudio) {
-        console.log('slashAudio元素存在，开始播放');
+        console.log('✅ slashAudio元素存在');
+        console.log('📊 slashAudio详细状态:', {
+            volume: slashAudio.volume,
+            paused: slashAudio.paused,
+            currentTime: slashAudio.currentTime,
+            duration: slashAudio.duration,
+            readyState: slashAudio.readyState,
+            networkState: slashAudio.networkState,
+            src: slashAudio.src,
+            muted: slashAudio.muted,
+            loop: slashAudio.loop
+        });
+        
         slashAudio.currentTime = 0;
         slashAudio.loop = true;
-        slashAudio.play().then(() => {
-            console.log('写字音效播放成功');
-        }).catch(e => {
-            console.log('写字音效播放失败:', e);
-        });
+        console.log('🔄 重置slash音频播放位置并设置循环');
+        
+        // 检测移动设备
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const isTablet = /iPad|Android/i.test(navigator.userAgent) && !/Mobile/i.test(navigator.userAgent);
+        
+        if (isMobile || isTablet) {
+            console.log('📱 移动/平板设备播放写字音效');
+            // 移动设备播放策略
+            const tryPlayWriting = () => {
+                const playPromise = slashAudio.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        console.log('✅ 移动设备写字音效播放成功');
+                    }).catch(error => {
+                        console.error('❌ 移动设备写字音效播放失败:', error);
+                        // 移动设备上可能需要用户交互后才能播放
+                        // 这里不重试，避免过多的错误日志
+                    });
+                } else {
+                    console.error('❌ slashAudio.play()返回undefined');
+                }
+            };
+            tryPlayWriting();
+        } else {
+            console.log('💻 桌面设备播放写字音效');
+            // 桌面设备正常播放
+            slashAudio.play().then(() => {
+                console.log('✅ 桌面设备写字音效播放成功');
+            }).catch(e => {
+                console.error('❌ 桌面设备写字音效播放失败:', e);
+            });
+        }
     } else {
-        console.log('slashAudio元素不存在');
+        console.error('❌ slashAudio元素不存在');
     }
 }
 
 // 停止写字音效
 function stopWritingSound() {
+    console.log('停止写字音效...');
     if (slashAudio) {
+        console.log('停止写字音效播放');
         slashAudio.pause();
         slashAudio.currentTime = 0;
         slashAudio.loop = false;
@@ -2432,11 +3000,12 @@ class CarbonParticle {
         this.y = y;
         this.vx = (Math.random() - 0.5) * 1; // 水平速度，减慢
         this.vy = Math.random() * 0.5 + 0.2; // 垂直速度，减慢
-        this.size = Math.random() * 1 + 0.75; // 粒子大小
+        this.size = Math.random() * 1.5 + 1.0; // 减小粒子大小，范围1.0-2.5px
         this.life = 8.0;                     // 增加生命值
         this.decay = Math.random() * 0.008 + 0.003; // 减慢衰减速度
         this.gravity = 0.05;                 // 减小重力，降落更慢
-        this.alpha = 1.0;                    // 透明度
+        this.alpha = 0.7;                    // 降低初始透明度，让粒子更透明
+        this.maxAlpha = 0.7;                 // 最大透明度限制
     }
 
     update() {
@@ -2450,8 +3019,8 @@ class CarbonParticle {
         // 减少生命值
         this.life -= this.decay;
         
-        // 更新透明度
-        this.alpha = Math.max(0, this.life / 8.0);
+        // 更新透明度，使用最大透明度限制
+        this.alpha = Math.max(0, (this.life / 8.0) * this.maxAlpha);
         
         // 速度衰减
         this.vx *= 0.99;
@@ -2566,15 +3135,36 @@ class ParticleSystem {
             return;
         }
 
-        // 创建多个粒子
-        const particleCount = 3 + Math.floor(Math.random() * 4);
+        // 获取Canvas的显示尺寸进行边界检查
+        const canvasWidth = this.particleCanvas.width / (window.devicePixelRatio || 1);
+        const canvasHeight = this.particleCanvas.height / (window.devicePixelRatio || 1);
+        
+        // 边界检查和调试信息
+        const isInBounds = x >= 0 && x <= canvasWidth && y >= 0 && y <= canvasHeight;
+        
+        console.log('粒子生成详情:', {
+            原始坐标: {x, y},
+            Canvas尺寸: {width: canvasWidth, height: canvasHeight},
+            是否在边界内: isInBounds,
+            粒子Canvas存在: !!this.particleCanvas,
+            粒子Context存在: !!this.particleCtx
+        });
+        
+        // 即使超出边界也创建粒子，因为粒子可能会移动到可见区域
+        const particleX = x;
+        const particleY = y;
+
+        // 创建多个粒子，减少数量以降低浓度
+        const particleCount = 2 + Math.floor(Math.random() * 3); // 减少粒子数量
         
         for (let i = 0; i < particleCount; i++) {
-            const offsetX = (Math.random() - 0.5) * 15;
-            const offsetY = (Math.random() - 0.5) * 15;
-            const particle = new CarbonParticle(x + offsetX, y + offsetY);
+            const offsetX = (Math.random() - 0.5) * 12; // 减少偏移范围
+            const offsetY = (Math.random() - 0.5) * 12;
+            const particle = new CarbonParticle(particleX + offsetX, particleY + offsetY);
             this.particles.push(particle);
         }
+        
+        console.log('粒子创建完成，当前粒子总数:', this.particles.length);
         
         // 立即绘制一帧以确保粒子可见
         this.drawFrame();
@@ -2618,19 +3208,34 @@ class ParticleSystem {
     }
 
     drawFrame() {
-        if (!this.particleCtx) return;
+        if (!this.particleCtx) {
+            console.log('drawFrame: particleCtx不存在');
+            return;
+        }
+        
+        const canvasWidth = this.particleCanvas.width / (window.devicePixelRatio || 1);
+        const canvasHeight = this.particleCanvas.height / (window.devicePixelRatio || 1);
         
         // 清除画布
-        this.particleCtx.clearRect(0, 0, this.particleCanvas.width / (window.devicePixelRatio || 1), this.particleCanvas.height / (window.devicePixelRatio || 1));
+        this.particleCtx.clearRect(0, 0, canvasWidth, canvasHeight);
         
         // 更新和绘制所有粒子
         let aliveCount = 0;
+        let visibleCount = 0;
+        
         for (let i = this.particles.length - 1; i >= 0; i--) {
             const particle = this.particles[i];
             const isAlive = particle.update();
             
             if (isAlive) {
-                particle.draw(this.particleCtx);
+                // 检查粒子是否在可见区域内
+                const isVisible = particle.x >= -50 && particle.x <= canvasWidth + 50 && 
+                                particle.y >= -50 && particle.y <= canvasHeight + 50;
+                
+                if (isVisible) {
+                    particle.draw(this.particleCtx);
+                    visibleCount++;
+                }
                 aliveCount++;
             } else {
                 // 移除死亡的粒子
@@ -2638,7 +3243,15 @@ class ParticleSystem {
             }
         }
         
-        // 粒子绘制完成
+        // 定期输出调试信息
+        if (this.particles.length > 0 && Math.random() < 0.1) {
+            console.log('粒子状态:', {
+                总粒子数: this.particles.length,
+                存活粒子数: aliveCount,
+                可见粒子数: visibleCount,
+                Canvas尺寸: {width: canvasWidth, height: canvasHeight}
+            });
+        }
     }
     
     animate() {

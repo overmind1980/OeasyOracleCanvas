@@ -54,9 +54,9 @@
         .character-grid {
             display: grid;
             grid-template-columns: repeat(10, 1fr);
-            gap: 1px;
-            margin: 2px 0;
-            padding: 1px;
+            gap: 0.5px;
+            margin: 1px 0;
+            padding: 0;
             max-height: none;
             overflow: visible;
             width: 100%;
@@ -88,19 +88,32 @@
         @media (max-width: 1024px) {
             .character-grid {
                 grid-template-columns: repeat(10, 1fr);
-                gap: 1px;
+                gap: 0.5px;
+            }
+            
+            .character-card {
+                min-height: 42px;
+                padding: 1px;
             }
         }
         
         @media (max-width: 768px) {
             .character-grid {
-                grid-template-columns: repeat(8, 1fr);
-                gap: 1px;
+                grid-template-columns: repeat(10, 1fr);
+                gap: 0.5px;
             }
             
-            #grid-3, #grid-4, #grid-5 {
-                /* 移动设备上调整行数以适应8列布局 */
-                grid-template-rows: none;
+            .character-card {
+                min-height: 40px;
+                padding: 0.5px;
+            }
+            
+            .character-display {
+                font-size: 16px;
+            }
+            
+            .character-info {
+                font-size: 5px;
             }
         }
         
@@ -108,7 +121,7 @@
             background: linear-gradient(135deg, #E3F2FD, #BBDEFB);
             border: 1px solid #2196F3;
             border-radius: 3px;
-            padding: 2px 1px;
+            padding: 1px;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -118,10 +131,12 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            min-height: 50px;
+            min-height: 45px;
             box-sizing: border-box;
             width: 100%;
             margin: 0;
+            max-width: 100%;
+            overflow: hidden;
         }
         
         .character-card:hover {
@@ -132,10 +147,10 @@
         }
         
         .character-display {
-            font-size: 20px;
+            font-size: 18px;
             font-weight: bold;
             color: #1976D2;
-            margin-bottom: 1px;
+            margin-bottom: 0;
             font-family: 'FangZhengOracle', 'ZhongYanYuan', 'OeasyOracle', serif;
             line-height: 1;
         }
@@ -155,9 +170,9 @@
         }
         
         .character-info {
-            font-size: 7px;
+            font-size: 6px;
             color: #424242;
-            line-height: 1;
+            line-height: 0.9;
         }
         
         @media (max-width: 1024px) {
@@ -206,7 +221,6 @@
         }
         
         body {
-            font-family: 'Microsoft YaHei', '微软雅黑', Arial, sans-serif;
             background: linear-gradient(135deg, #F8F9FA, #E9ECEF);
             margin: 0;
             padding: 10px;
@@ -288,6 +302,16 @@
     <!-- 背景音乐 -->
     <audio id="bgmAudio" loop preload="auto">
         <source src="audio/bgm.mp3" type="audio/mpeg">
+    </audio>
+    
+    <!-- 庆祝音效 -->
+    <audio id="passAudio" preload="auto">
+        <source src="audio/pass.mp3" type="audio/mpeg">
+    </audio>
+    
+    <!-- 书写音效 -->
+    <audio id="slashAudio" loop preload="auto">
+        <source src="audio/slash.mp3" type="audio/mpeg">
     </audio>
     
     <div class="container">
@@ -474,8 +498,11 @@
             // 显示选中的年龄段
             document.getElementById(`age-${age}`).classList.add('active');
             
-            // 激活对应按钮
-            event.target.classList.add('active');
+            // 激活对应按钮（通过年龄查找对应按钮）
+            const targetBtn = document.querySelector(`button[onclick="showAge(${age})"]`);
+            if (targetBtn) {
+                targetBtn.classList.add('active');
+            }
         }
         
         // 创建汉字卡片
@@ -494,6 +521,20 @@
         
         // 跳转到字符练习页面
         function goToChar(char) {
+            // 找到当前字符所属的年龄组
+            let currentAge = null;
+            for (const [age, characters] of Object.entries(ageCharacters)) {
+                if (characters.includes(char)) {
+                    currentAge = age;
+                    break;
+                }
+            }
+            
+            // 保存当前年龄组到localStorage
+            if (currentAge) {
+                localStorage.setItem('currentAge', currentAge);
+            }
+            
             window.location.href = `char.html?c=${encodeURIComponent(char)}`;
         }
         
@@ -515,15 +556,25 @@
             bgmAudio = document.getElementById('bgmAudio');
             volumeSlider = document.getElementById('volumeSlider');
             
+            // 详细的音频元素状态检查
+            console.log('🎵 音频初始化开始...');
+            console.log('bgmAudio元素:', bgmAudio);
+            console.log('音频文件路径:', bgmAudio ? bgmAudio.src : '未找到');
+            console.log('音频readyState:', bgmAudio ? bgmAudio.readyState : '未知');
+            console.log('音频networkState:', bgmAudio ? bgmAudio.networkState : '未知');
+            console.log('音频paused状态:', bgmAudio ? bgmAudio.paused : '未知');
+            console.log('音频muted状态:', bgmAudio ? bgmAudio.muted : '未知');
+            
             // 从localStorage恢复音量设置
             const savedVolume = localStorage.getItem('oracleAudioVolume');
-            const volume = savedVolume ? parseInt(savedVolume) : 50;
+            const volume = savedVolume !== null ? Math.max(parseInt(savedVolume), 10) : 50; // 确保音量至少为10
             
             // 设置音量
             volumeSlider.value = volume;
             bgmAudio.volume = volume / 100;
             
             console.log('首页恢复音量设置:', volume);
+            console.log('实际设置的音量值:', bgmAudio.volume);
             
             // 音量滑块事件
             volumeSlider.addEventListener('input', function() {
@@ -534,25 +585,389 @@
                 localStorage.setItem('oracleAudioVolume', this.value);
             });
             
-            // 尝试自动播放背景音乐
-            const playBgm = () => {
-                bgmAudio.play().catch(e => {
-                    console.log('自动播放被阻止，需要用户交互后播放');
-                    // 添加点击事件监听器，用户首次交互后播放
-                    document.addEventListener('click', function playOnFirstClick() {
-                        bgmAudio.play();
-                        document.removeEventListener('click', playOnFirstClick);
-                    }, { once: true });
+            // 播放按钮已删除，现在依赖自动播放机制
+            
+            // 浏览器兼容性检测
+            const userAgent = navigator.userAgent.toLowerCase();
+            const isFirefox = userAgent.indexOf('firefox') > -1;
+            const isChrome = userAgent.indexOf('chrome') > -1;
+            const isSafari = userAgent.indexOf('safari') > -1 && !isChrome;
+            const isMobile = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
+            
+            console.log('🌐 浏览器检测结果:');
+            console.log('Firefox:', isFirefox);
+            console.log('Chrome:', isChrome);
+            console.log('Safari:', isSafari);
+            console.log('移动设备:', isMobile);
+            console.log('用户代理:', userAgent);
+            
+            // 检查音频支持
+            console.log('🔊 音频支持检测:');
+            console.log('AudioContext支持:', !!(window.AudioContext || window.webkitAudioContext));
+            console.log('HTML5 Audio支持:', !!window.Audio);
+            console.log('MP3格式支持:', bgmAudio ? bgmAudio.canPlayType('audio/mpeg') : '未知');
+            
+            // 检查浏览器权限和自动播放策略
+            console.log('🔐 浏览器权限和策略检测:');
+            
+            // 检查自动播放策略
+            if ('permissions' in navigator) {
+                navigator.permissions.query({name: 'autoplay'}).then(result => {
+                    console.log('自动播放权限状态:', result.state);
+                }).catch(e => {
+                    console.log('无法查询自动播放权限:', e);
+                });
+            } else {
+                console.log('浏览器不支持权限API');
+            }
+            
+            // 检查媒体会话API支持
+            console.log('MediaSession API支持:', 'mediaSession' in navigator);
+            
+            // 检查页面是否通过HTTPS访问
+            console.log('HTTPS协议:', location.protocol === 'https:');
+            console.log('当前协议:', location.protocol);
+            
+            // 检查用户激活状态
+            if ('userActivation' in navigator) {
+                console.log('用户激活状态:', navigator.userActivation.hasBeenActive);
+                console.log('当前用户激活:', navigator.userActivation.isActive);
+            } else {
+                console.log('浏览器不支持用户激活API');
+            }
+            
+            // Firefox特定的音频上下文处理
+            let audioContext;
+            
+            if (isFirefox && window.AudioContext) {
+                try {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    console.log('Firefox音频上下文已创建，状态:', audioContext.state);
+                } catch (e) {
+                    console.error('音频上下文创建失败:', e);
+                }
+            }
+            
+            // 重新创建音频元素的备用策略
+        function recreateAudioElement() {
+            console.log('🔄 重新创建音频元素...');
+            
+            // 移除旧的音频元素
+            if (bgmAudio && bgmAudio.parentNode) {
+                bgmAudio.parentNode.removeChild(bgmAudio);
+            }
+            
+            // 创建新的音频元素
+            bgmAudio = document.createElement('audio');
+            bgmAudio.id = 'bgmAudio';
+            bgmAudio.loop = true;
+            bgmAudio.preload = 'auto';
+            const savedVol = localStorage.getItem('oracleAudioVolume');
+            bgmAudio.volume = savedVol !== null ? Math.max(parseInt(savedVol), 10) / 100 : 0.5;
+            
+            // 添加音频源
+            const source = document.createElement('source');
+            source.src = 'audio/bgm.mp3';
+            source.type = 'audio/mpeg';
+            bgmAudio.appendChild(source);
+            
+            // 添加到页面
+            document.body.appendChild(bgmAudio);
+            
+            console.log('✅ 音频元素重新创建完成');
+            
+            // 重新添加事件监听器
+            setupAudioEventListeners();
+            
+            // 尝试播放
+            setTimeout(() => {
+                playAudio();
+            }, 500);
+        }
+        
+        // 设置音频事件监听器
+        function setupAudioEventListeners() {
+            bgmAudio.addEventListener('loadstart', () => console.log('🔄 开始加载音频'));
+            bgmAudio.addEventListener('loadeddata', () => console.log('📊 音频数据加载完成'));
+            bgmAudio.addEventListener('canplay', () => console.log('▶️ 音频可以开始播放'));
+            bgmAudio.addEventListener('canplaythrough', () => console.log('🎵 音频可以完整播放'));
+            bgmAudio.addEventListener('play', () => console.log('🎶 音频开始播放'));
+            bgmAudio.addEventListener('playing', () => console.log('🎵 音频正在播放'));
+            bgmAudio.addEventListener('pause', () => console.log('⏸️ 音频暂停'));
+            bgmAudio.addEventListener('ended', () => console.log('🔚 音频播放结束'));
+            bgmAudio.addEventListener('error', (e) => {
+                console.error('❌ 音频错误事件:', e);
+                console.error('错误详情:', bgmAudio.error);
+            });
+            bgmAudio.addEventListener('stalled', () => console.warn('⚠️ 音频加载停滞'));
+            bgmAudio.addEventListener('waiting', () => console.warn('⏳ 音频缓冲中'));
+        }
+        
+        // 强制播放策略（多种方法尝试）
+        function forcePlayAudio() {
+            console.log('💪 启用强制播放策略...');
+            
+            const strategies = [
+                // 策略1：直接播放
+                () => {
+                    console.log('策略1：直接播放');
+                    return bgmAudio.play();
+                },
+                // 策略2：重置后播放
+                () => {
+                    console.log('策略2：重置后播放');
+                    bgmAudio.currentTime = 0;
+                    return bgmAudio.play();
+                },
+                // 策略3：加载后播放
+                () => {
+                    console.log('策略3：加载后播放');
+                    bgmAudio.load();
+                    return new Promise((resolve, reject) => {
+                        bgmAudio.addEventListener('canplay', () => {
+                            bgmAudio.play().then(resolve).catch(reject);
+                        }, { once: true });
+                    });
+                },
+                // 策略4：重新创建元素
+                () => {
+                    console.log('策略4：重新创建元素');
+                    recreateAudioElement();
+                    return new Promise((resolve) => {
+                        setTimeout(() => {
+                            bgmAudio.play().then(resolve).catch(() => resolve());
+                        }, 1000);
+                    });
+                }
+            ];
+            
+            let currentStrategy = 0;
+            
+            function tryNextStrategy() {
+                if (currentStrategy >= strategies.length) {
+                    console.error('💥 所有播放策略都失败了');
+                    return;
+                }
+                
+                const strategy = strategies[currentStrategy++];
+                const result = strategy();
+                
+                if (result && typeof result.then === 'function') {
+                    result.then(() => {
+                        console.log(`✅ 策略${currentStrategy}成功！`);
+                    }).catch((error) => {
+                        console.log(`❌ 策略${currentStrategy}失败:`, error.message);
+                        setTimeout(tryNextStrategy, 1000);
+                    });
+                } else {
+                    setTimeout(tryNextStrategy, 1000);
+                }
+            }
+            
+            tryNextStrategy();
+        }
+        
+        // 强化的用户交互触发逻辑
+            const playAudio = async () => {
+                console.log('🎯 开始尝试播放音频...');
+                console.log('当前音频状态 - paused:', bgmAudio.paused, 'ended:', bgmAudio.ended);
+                console.log('当前音频时间:', bgmAudio.currentTime, '总时长:', bgmAudio.duration);
+                
+                try {
+                    // Firefox特定处理：确保音频上下文已激活
+                    if (isFirefox && audioContext) {
+                        console.log('Firefox音频上下文当前状态:', audioContext.state);
+                        if (audioContext.state === 'suspended') {
+                            await audioContext.resume();
+                            console.log('✅ Firefox音频上下文已恢复到:', audioContext.state);
+                        }
+                    }
+                    
+                    // 重新加载音频以确保Firefox兼容性
+                    console.log('🔄 重新加载音频文件...');
+                    bgmAudio.load();
+                    
+                    // 等待音频加载完成
+                    console.log('⏳ 等待音频加载完成...');
+                    await new Promise((resolve, reject) => {
+                        const onCanPlay = () => {
+                            console.log('✅ 音频加载完成，readyState:', bgmAudio.readyState);
+                            resolve();
+                        };
+                        const onError = (e) => {
+                            console.error('❌ 音频加载失败:', e);
+                            console.error('音频错误详情:', bgmAudio.error);
+                            reject(e);
+                        };
+                        
+                        bgmAudio.addEventListener('canplaythrough', onCanPlay, { once: true });
+                        bgmAudio.addEventListener('error', onError, { once: true });
+                        setTimeout(() => {
+                            console.warn('⚠️ 音频加载超时');
+                            reject(new Error('音频加载超时'));
+                        }, 5000); // 5秒超时
+                    });
+                    
+                    console.log('🎵 尝试播放音频...');
+                    const playPromise = bgmAudio.play();
+                    if (playPromise !== undefined) {
+                        await playPromise;
+                        console.log('🎉 背景音乐播放成功！');
+                        console.log('播放后状态 - paused:', bgmAudio.paused, 'volume:', bgmAudio.volume);
+                    } else {
+                        console.warn('⚠️ play()方法返回undefined');
+                    }
+                } catch (error) {
+                    console.error('❌ 音频播放失败:', error);
+                    console.error('错误类型:', error.name);
+                    console.error('错误消息:', error.message);
+                    console.error('音频元素错误:', bgmAudio.error);
+                    
+                    // 分析具体的播放失败原因
+                    if (error.name === 'NotAllowedError') {
+                        console.error('🚫 浏览器阻止了自动播放，需要用户交互');
+                    } else if (error.name === 'NotSupportedError') {
+                        console.error('🚫 音频格式不支持');
+                        // 尝试重新创建音频元素
+                        recreateAudioElement();
+                    } else if (error.name === 'AbortError') {
+                        console.error('🚫 播放被中止');
+                    }
+                    
+                    // 重试机制
+                    console.log('🔄 1秒后尝试重试播放...');
+                    setTimeout(() => {
+                        console.log('🔄 执行重试播放...');
+                        bgmAudio.play().then(() => {
+                            console.log('✅ 重试播放成功');
+                        }).catch(e => {
+                            console.error('❌ 重试播放失败:', e);
+                            // 如果重试失败，启用强制播放策略
+                            forcePlayAudio();
+                        });
+                    }, 1000);
+                }
+            };
+            
+            // 添加音频事件监听器来监控状态
+            setupAudioEventListeners();
+            
+            // 立即尝试自动播放
+            console.log('🚀 开始自动播放尝试...');
+            playAudio();
+            
+            // 添加多种用户交互事件监听 - 更积极的触发策略
+            const interactionEvents = ['click', 'touchstart', 'touchend', 'keydown', 'mousedown', 'pointerdown', 'mousemove', 'scroll'];
+            let interactionTriggered = false;
+            
+            const playOnInteraction = (event) => {
+                if (interactionTriggered) return;
+                interactionTriggered = true;
+                
+                console.log('👆 用户交互触发音频播放:', event.type);
+                playAudio();
+                
+                // 移除所有事件监听器
+                interactionEvents.forEach(eventType => {
+                    document.removeEventListener(eventType, playOnInteraction);
                 });
             };
             
-            playBgm();
+            // 立即添加事件监听器
+            interactionEvents.forEach(event => {
+                document.addEventListener(event, playOnInteraction, { once: true, passive: true });
+            });
+            
+            // 延迟500ms后再次尝试播放（给浏览器更多时间准备）
+            setTimeout(() => {
+                if (bgmAudio.paused) {
+                    console.log('🔄 延迟500ms后再次尝试自动播放');
+                    playAudio();
+                }
+            }, 500);
+            
+            // 延迟1秒后再次尝试播放
+            setTimeout(() => {
+                if (bgmAudio.paused) {
+                    console.log('🔄 延迟1秒后再次尝试自动播放');
+                    playAudio();
+                }
+            }, 1000);
+            
+            // 添加页面可见性变化监听
+            document.addEventListener('visibilitychange', () => {
+                if (!document.hidden && bgmAudio.paused) {
+                    console.log('👁️ 页面重新可见，尝试恢复音频播放');
+                    playAudio();
+                }
+            });
+            
+            // Firefox特定的额外触发策略
+            if (isFirefox) {
+                console.log('🦊 启用Firefox特定音频策略');
+                
+                // 延迟播放策略
+                setTimeout(() => {
+                    if (bgmAudio.paused) {
+                        console.log('🦊 Firefox延迟播放尝试');
+                        playAudio();
+                    }
+                }, 2000);
+                
+                // 鼠标移动触发
+                let mouseMoveTriggered = false;
+                document.addEventListener('mousemove', () => {
+                    if (!mouseMoveTriggered && bgmAudio.paused) {
+                        mouseMoveTriggered = true;
+                        console.log('🦊 Firefox鼠标移动触发音频');
+                        playAudio();
+                    }
+                }, { once: true });
+                
+                // 滚动触发
+                let scrollTriggered = false;
+                document.addEventListener('scroll', () => {
+                    if (!scrollTriggered && bgmAudio.paused) {
+                        scrollTriggered = true;
+                        console.log('🦊 Firefox滚动触发音频');
+                        playAudio();
+                    }
+                }, { once: true });
+            }
+            
+            // 定期检查音频状态
+             const audioStatusChecker = setInterval(() => {
+                 if (bgmAudio.paused && !bgmAudio.ended) {
+                     console.log('🔍 定期检查：音频处于暂停状态，尝试播放');
+                     playAudio();
+                 } else if (!bgmAudio.paused) {
+                     console.log('✅ 定期检查：音频正在播放，停止检查');
+                     clearInterval(audioStatusChecker);
+                 }
+             }, 3000); // 每3秒检查一次
+             
+             // 10秒后如果还没播放成功，启用强制播放策略
+             setTimeout(() => {
+                 if (bgmAudio.paused) {
+                     console.log('⏰ 10秒后仍未播放，启用强制播放策略');
+                     forcePlayAudio();
+                 }
+                 clearInterval(audioStatusChecker);
+                 console.log('⏰ 停止定期音频状态检查');
+             }, 10000);
         }
         
         // 页面加载完成后初始化
         document.addEventListener('DOMContentLoaded', function() {
             initPage();
             initAudio();
+            
+            // 恢复之前保存的年龄组状态
+            const savedAge = localStorage.getItem('currentAge');
+            if (savedAge && ageCharacters[savedAge]) {
+                console.log(`恢复年龄组状态: ${savedAge}岁`);
+                showAge(parseInt(savedAge));
+            }
         });
     </script>
 </body>

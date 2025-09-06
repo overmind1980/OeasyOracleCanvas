@@ -3,21 +3,26 @@
     font-family: 'FangZhengOracle';
     src: url('./fonts/FangZhengOracle.ttf') format('truetype');
     font-display: swap;
+    font-weight: normal;
+    font-style: normal;
 }
-
-
 
 @font-face {
     font-family: 'ZhongYanYuan';
     src: url('./fonts/ZhongYanYuan.ttf') format('truetype');
     font-display: swap;
+    font-weight: normal;
+    font-style: normal;
 }
 
 @font-face {
-  font-family: 'OeasyOracle';
-  src: url('./fonts/OeasyOracle.ttf') format('truetype');
-  font-weight: normal;
-  font-style: normal;
+    font-family: 'OeasyOracle';
+    src: url('./fonts/OeasyOracle.ttf') format('truetype');
+    font-display: swap;
+    font-weight: normal;
+    font-style: normal;
+   font-weight: normal;
+    font-style: normal;
 }
 
 /* 全局样式 */
@@ -43,6 +48,12 @@ body {
     position: fixed;
     top: 0;
     left: 0;
+}
+
+/* 汉字卡片显示样式 - 使用甲骨文字体 */
+.character-display {
+    font-family: "FangZhengOracle", "ZhongYanYuan", "OeasyOracle", serif !important;
+    font-weight: normal;
 }
 
 .app-container {
@@ -550,41 +561,42 @@ body {
         height: 100vh;
         display: flex;
         flex-direction: column;
-        padding: 8px;
+        padding: 5px;
     }
     
     .info-section {
         flex-shrink: 0;
-        padding: 8px;
-        margin-bottom: 8px;
+        padding: 6px;
+        margin-bottom: 5px;
     }
     
     .canvas-section {
         flex: 1;
-        min-height: 60vh; /* 确保画布占据至少60%的视口高度 */
+        min-height: 80vh; /* 增加画布占据至少80%的视口高度 */
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 10px;
+        padding: 5px;
     }
     
     #oracleCanvas {
-        width: 90vw; /* 使用视口宽度的90% */
-        height: 60vh; /* 使用视口高度的60% */
-        max-width: 500px;
-        max-height: 600px;
+        width: 95vw; /* 增加到视口宽度的95% */
+        height: 80vh; /* 增加到视口高度的80% */
+        max-width: none; /* 移除最大宽度限制 */
+        max-height: none; /* 移除最大高度限制 */
     }
 }
 
 /* 横屏优化 - 宽度大于高度时保持原有布局 */
 @media (orientation: landscape) {
     .canvas-section {
-        min-height: 400px;
+        min-height: 70vh; /* 增加最小高度 */
     }
     
     #oracleCanvas {
         width: 100%;
         height: 100%;
+        min-height: 70vh; /* 确保横屏时也有足够高度 */
     }
 }
 
@@ -627,8 +639,9 @@ body {
     
     .canvas-section {
         flex: 1;
-        min-height: 0;
+        min-height: 75vh; /* 增加移动设备上的最小高度 */
         overflow: hidden;
+        padding: 3px;
     }
     
     .celebration-text {
@@ -642,12 +655,17 @@ body {
 
 @media (max-width: 480px) {
     .app-container {
-        padding: 3px;
+        padding: 2px;
     }
     
     .info-section {
-        padding: 8px;
-        margin-bottom: 3px;
+        padding: 5px;
+        margin-bottom: 2px;
+    }
+    
+    .canvas-section {
+        padding: 2px;
+        min-height: 80vh; /* 小屏设备上进一步增加画布高度 */
     }
     
     .pronunciation, .meaning {

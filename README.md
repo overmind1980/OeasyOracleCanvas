@@ -29,7 +29,7 @@ oracle/
 ├── CharacterInfo.json      # 字符信息数据
 ├── fonts/                  # 甲骨文字体文件
 │   ├── FangZhengOracle.ttf
-│   ├── HYChenTiJiaGuWen.ttf
+
 │   ├── OeasyOracle.ttf
 │   └── ZhongYanYuan.ttf
 ├── audio/                  # 音频文件
