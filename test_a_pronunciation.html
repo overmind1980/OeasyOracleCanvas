@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ǎ音发音测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .test-button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 16px;
+        }
+        .test-button:hover {
+            background-color: #45a049;
+        }
+        .log {
+            background-color: #f0f0f0;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>ǎ音发音测试</h1>
+        
+        <div class="test-section">
+            <h3>1. 测试拼音分解功能</h3>
+            <button class="test-button" onclick="testDecomposition()">测试拼音分解</button>
+            <div id="decomposition-result" class="result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>2. 测试ǎ音发音</h3>
+            <button class="test-button" onclick="testASpeech()">发音测试ǎ</button>
+            <button class="test-button" onclick="testMappedASpeech()">发音测试映射后的ǎ</button>
+            <div id="speech-result" class="result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>3. 测试完整拼音</h3>
+            <button class="test-button" onclick="testFullPinyin()">测试mǎ的发音</button>
+            <div id="full-result" class="result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>控制台日志</h3>
+            <div id="console-log" class="log"></div>
+            <button class="test-button" onclick="clearLog()">清空日志</button>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        let logElement = document.getElementById('console-log');
+        
+        // 重写console.log以显示在页面上
+        const originalLog = console.log;
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            logElement.textContent += args.join(' ') + '\n';
+            logElement.scrollTop = logElement.scrollHeight;
+        };
+        
+        function clearLog() {
+            logElement.textContent = '';
+        }
+        
+        function testDecomposition() {
+            console.log('=== 测试拼音分解功能 ===');
+            const testCases = ['ǎ', 'mǎ', 'nǎ', 'lǎ'];
+            let resultHtml = '<div class="info">拼音分解测试结果：</div>';
+            
+            testCases.forEach(pinyin => {
+                console.log(`测试拼音: ${pinyin}`);
+                const result = decomposePinyin(pinyin);
+                console.log(`分解结果: ${JSON.stringify(result)}`);
+                resultHtml += `<div>${pinyin} → ${JSON.stringify(result)}</div>`;
+            });
+            
+            document.getElementById('decomposition-result').innerHTML = resultHtml;
+        }
+        
+        function testASpeech() {
+            console.log('=== 测试直接发音ǎ ===');
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance('ǎ');
+                utterance.lang = 'zh-CN';
+                utterance.rate = 0.8;
+                utterance.pitch = 1.0;
+                
+                utterance.onstart = () => {
+                    console.log('开始发音: ǎ');
+                    document.getElementById('speech-result').innerHTML = '<div class="info">正在发音: ǎ</div>';
+                };
+                
+                utterance.onend = () => {
+                    console.log('发音结束: ǎ');
+                    document.getElementById('speech-result').innerHTML += '<div class="success">发音完成: ǎ</div>';
+                };
+                
+                utterance.onerror = (event) => {
+                    console.log('发音错误:', event.error);
+                    document.getElementById('speech-result').innerHTML += '<div class="error">发音错误: ' + event.error + '</div>';
+                };
+                
+                speechSynthesis.speak(utterance);
+            } else {
+                console.log('浏览器不支持语音合成');
+                document.getElementById('speech-result').innerHTML = '<div class="error">浏览器不支持语音合成</div>';
+            }
+        }
+        
+        function testMappedASpeech() {
+            console.log('=== 测试映射后的ǎ发音 ===');
+            
+            // 加载拼音映射
+            fetch('pinyinToCharacterMap.json')
+                .then(response => response.json())
+                .then(pinyinToCharacterMap => {
+                    const mappedChar = pinyinToCharacterMap['ǎ'] || pinyinToCharacterMap['a'];
+                    console.log('ǎ映射到的汉字:', mappedChar);
+                    
+                    if (mappedChar && 'speechSynthesis' in window) {
+                        const utterance = new SpeechSynthesisUtterance(mappedChar);
+                        utterance.lang = 'zh-CN';
+                        utterance.rate = 0.8;
+                        utterance.pitch = 1.0;
+                        
+                        utterance.onstart = () => {
+                            console.log('开始发音映射字符:', mappedChar);
+                            document.getElementById('speech-result').innerHTML += '<div class="info">正在发音映射字符: ' + mappedChar + '</div>';
+                        };
+                        
+                        utterance.onend = () => {
+                            console.log('映射字符发音结束:', mappedChar);
+                            document.getElementById('speech-result').innerHTML += '<div class="success">映射字符发音完成: ' + mappedChar + '</div>';
+                        };
+                        
+                        utterance.onerror = (event) => {
+                            console.log('映射字符发音错误:', event.error);
+                            document.getElementById('speech-result').innerHTML += '<div class="error">映射字符发音错误: ' + event.error + '</div>';
+                        };
+                        
+                        speechSynthesis.speak(utterance);
+                    } else {
+                        console.log('未找到映射字符或浏览器不支持语音合成');
+                        document.getElementById('speech-result').innerHTML += '<div class="error">未找到映射字符或浏览器不支持语音合成</div>';
+                    }
+                })
+                .catch(error => {
+                    console.log('加载拼音映射失败:', error);
+                    document.getElementById('speech-result').innerHTML += '<div class="error">加载拼音映射失败: ' + error.message + '</div>';
+                });
+        }
+        
+        function testFullPinyin() {
+            console.log('=== 测试完整拼音mǎ的发音 ===');
+            
+            // 使用修改后的speakPinyinDecomposition函数
+            if (typeof speakPinyinDecomposition === 'function') {
+                speakPinyinDecomposition('mǎ')
+                    .then(() => {
+                        console.log('完整拼音发音完成');
+                        document.getElementById('full-result').innerHTML = '<div class="success">完整拼音mǎ发音完成</div>';
+                    })
+                    .catch(error => {
+                        console.log('完整拼音发音错误:', error);
+                        document.getElementById('full-result').innerHTML = '<div class="error">完整拼音发音错误: ' + error.message + '</div>';
+                    });
+            } else {
+                console.log('speakPinyinDecomposition函数不可用');
+                document.getElementById('full-result').innerHTML = '<div class="error">speakPinyinDecomposition函数不可用</div>';
+            }
+        }
+        
+        // 页面加载完成后自动运行分解测试
+        window.onload = function() {
+            console.log('页面加载完成，开始测试');
+            setTimeout(testDecomposition, 1000);
+        };
+    </script>
+</body>
+</html>

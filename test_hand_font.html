@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测试"手"字字体显示</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div style="padding: 20px; font-size: 24px;">
+        <h2>"手"字在不同字体中的显示效果：</h2>
+        
+        <div style="margin: 20px 0;">
+            <strong>FangZhengOracle字体：</strong>
+            <span style="font-family: 'FangZhengOracle', serif; font-size: 48px; color: red;">手</span>
+        </div>
+        
+        <div style="margin: 20px 0;">
+            <strong>HYChenTiJiaGuWen字体：</strong>
+            <span style="font-family: 'HYChenTiJiaGuWen', serif; font-size: 48px; color: blue;">手</span>
+        </div>
+        
+        <div style="margin: 20px 0;">
+            <strong>OeasyOracle字体：</strong>
+            <span style="font-family: 'OeasyOracle', serif; font-size: 48px; color: green;">手</span>
+        </div>
+        
+        <div style="margin: 20px 0;">
+            <strong>ZhongYanYuan字体：</strong>
+            <span style="font-family: 'ZhongYanYuan', serif; font-size: 48px; color: purple;">手</span>
+        </div>
+        
+        <div style="margin: 20px 0;">
+            <strong>系统默认字体：</strong>
+            <span style="font-family: serif; font-size: 48px; color: black;">手</span>
+        </div>
+        
+        <div style="margin: 20px 0;">
+            <button onclick="testFontDetection()">测试字体检测逻辑</button>
+            <div id="result" style="margin-top: 10px; padding: 10px; background: #f0f0f0;"></div>
+        </div>
+    </div>
+    
+    <script>
+        // 从app.js中复制必要的字体检测代码
+        const FONT_CONFIG = {
+            primary: 'FangZhengOracle',
+            secondary: 'HYChenTiJiaGuWen',
+            tertiary: 'ZhongYanYuan',
+            quaternary: 'OeasyOracle'
+        };
+        
+        class FontLoader {
+            constructor() {
+                this.loadedFonts = new Set();
+            }
+            
+            async loadFont(fontName) {
+                try {
+                    if (this.loadedFonts.has(fontName)) {
+                        return true;
+                    }
+                    
+                    await document.fonts.ready;
+                    const fontSpec = `20px ${fontName}`;
+                    if (document.fonts.check(fontSpec)) {
+                        this.loadedFonts.add(fontName);
+                        console.log(`字体 ${fontName} 加载成功`);
+                        return true;
+                    }
+                    return false;
+                } catch (error) {
+                    return false;
+                }
+            }
+            
+            getFontPriority() {
+                return [FONT_CONFIG.primary, FONT_CONFIG.secondary, FONT_CONFIG.tertiary, FONT_CONFIG.quaternary];
+            }
+            
+            async getCharacterScore(character, fontName) {
+                console.log(`  📊 开始计算字体 ${fontName} 对字符 '${character}' 的适配分数`);
+                
+                if (!await this.loadFont(fontName)) {
+                    console.log(`  ❌ 字体 ${fontName} 未加载，返回分数 0`);
+                    return 0;
+                }
+                
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = 200;
+                canvas.height = 200;
+                
+                // 使用目标字体绘制字符
+                ctx.clearRect(0, 0, 200, 200);
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0, 0, 200, 200);
+                ctx.font = `72px "${fontName}"`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillStyle = 'black';
+                ctx.fillText(character, 100, 100);
+                
+                const targetImageData = ctx.getImageData(0, 0, 200, 200);
+                
+                // 使用默认字体绘制字符
+                ctx.clearRect(0, 0, 200, 200);
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0, 0, 200, 200);
+                ctx.font = `72px serif`;
+                ctx.fillStyle = 'black';
+                ctx.fillText(character, 100, 100);
+                
+                const fallbackImageData = ctx.getImageData(0, 0, 200, 200);
+                
+                const targetData = targetImageData.data;
+                const fallbackData = fallbackImageData.data;
+                
+                let differences = 0;
+                let totalPixels = 0;
+                
+                for (let i = 0; i < targetData.length; i += 4) {
+                    const targetAlpha = targetData[i + 3];
+                    const fallbackAlpha = fallbackData[i + 3];
+                    
+                    if (targetAlpha > 0 || fallbackAlpha > 0) {
+                        totalPixels++;
+                        
+                        const targetR = targetData[i];
+                        const targetG = targetData[i + 1];
+                        const targetB = targetData[i + 2];
+                        
+                        const fallbackR = fallbackData[i];
+                        const fallbackG = fallbackData[i + 1];
+                        const fallbackB = fallbackData[i + 2];
+                        
+                        const colorDiff = Math.abs(targetR - fallbackR) + 
+                                        Math.abs(targetG - fallbackG) + 
+                                        Math.abs(targetB - fallbackB) + 
+                                        Math.abs(targetAlpha - fallbackAlpha);
+                        
+                        if (colorDiff > 10) {
+                            differences++;
+                        }
+                    }
+                }
+                
+                const score = totalPixels > 0 ? (differences / totalPixels) * 100 : 0;
+                console.log(`  📈 像素分析结果: 总像素=${totalPixels}, 差异像素=${differences}, 分数=${score.toFixed(2)}%`);
+                
+                return score;
+            }
+            
+            async getAvailableFontForCharacter(character) {
+                const fonts = this.getFontPriority();
+                
+                console.log(`\n=== 开始为字符 '${character}' 检测字体 ===`);
+                console.log('字体优先级顺序:', fonts);
+                
+                for (let i = 0; i < fonts.length; i++) {
+                    const font = fonts[i];
+                    console.log(`\n检测字体 ${i + 1}/${fonts.length}: ${font}`);
+                    
+                    const fontLoaded = await this.loadFont(font);
+                    console.log(`字体 ${font} 加载状态:`, fontLoaded);
+                    
+                    if (!fontLoaded) {
+                        console.log(`字体 ${font} 加载失败，跳过`);
+                        continue;
+                    }
+                    
+                    const score = await this.getCharacterScore(character, font);
+                    console.log(`字体 ${font} 对字符 '${character}' 的适配分数: ${score.toFixed(2)}%`);
+                    
+                    const threshold = 5;
+                    
+                    if (character === '手' && font === 'FangZhengOracle' && score < threshold) {
+                        console.log(`🎯 "手"字特殊处理：FangZhengOracle字体不包含该字符，跳过`);
+                        continue;
+                    }
+                    
+                    if (score > threshold) {
+                        console.log(`✅ 选择字体: ${font} (分数: ${score.toFixed(2)}%)`);
+                        console.log(`=== 字体检测完成 ===\n`);
+                        return font;
+                    } else {
+                        console.log(`❌ 字体 ${font} 分数过低 (${score.toFixed(2)}%)，继续检测下一个字体`);
+                    }
+                }
+                
+                console.log(`\n⚠️ 所有甲骨文字体都不适合字符 '${character}'，使用默认字体 serif`);
+                console.log(`=== 字体检测完成 ===\n`);
+                return 'serif';
+            }
+        }
+        
+        async function testFontDetection() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '正在测试字体检测...';
+            
+            const fontLoader = new FontLoader();
+            const result = await fontLoader.getAvailableFontForCharacter('手');
+            
+            resultDiv.innerHTML = `<strong>检测结果：</strong>"手"字应使用字体：<span style="color: red;">${result}</span>`;
+        }
+    </script>
+</body>
+</html>

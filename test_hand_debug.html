@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>手字字体检测调试</title>
+    <style>
+        @font-face {
+            font-family: 'HYChenTiJiaGuWen';
+            src: url('fonts/HYChenTiJiaGuWen.ttf') format('truetype');
+        }
+        @font-face {
+            font-family: 'OeasyOracle';
+            src: url('fonts/OeasyOracle.ttf') format('truetype');
+        }
+        @font-face {
+            font-family: 'FangZhengOracle';
+            src: url('fonts/FangZhengOracle.ttf') format('truetype');
+        }
+        @font-face {
+            font-family: 'ZhongYanYuan';
+            src: url('fonts/ZhongYanYuan.ttf') format('truetype');
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .font-test {
+            font-size: 48px;
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+        
+        .debug-info {
+            background: #f8f8f8;
+            padding: 10px;
+            margin: 10px 0;
+            border-left: 4px solid #007acc;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        
+        button {
+            background: #007acc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        
+        button:hover {
+            background: #005a9e;
+        }
+    </style>
+</head>
+<body>
+    <h1>"手"字字体检测调试页面</h1>
+    
+    <div class="test-section">
+        <h2>字体显示测试</h2>
+        <div class="font-test" style="font-family: 'HYChenTiJiaGuWen', serif;">手 (HYChenTiJiaGuWen)</div>
+        <div class="font-test" style="font-family: 'OeasyOracle', serif;">手 (OeasyOracle)</div>
+        <div class="font-test" style="font-family: 'FangZhengOracle', serif;">手 (FangZhengOracle)</div>
+        <div class="font-test" style="font-family: 'ZhongYanYuan', serif;">手 (ZhongYanYuan)</div>
+        <div class="font-test" style="font-family: serif;">手 (serif默认)</div>
+    </div>
+    
+    <div class="test-section">
+        <h2>甲骨文字符测试</h2>
+        <div class="font-test" style="font-family: 'HYChenTiJiaGuWen', serif;">𠂇 (HYChenTiJiaGuWen)</div>
+        <div class="font-test" style="font-family: 'OeasyOracle', serif;">𠂇 (OeasyOracle)</div>
+        <div class="font-test" style="font-family: 'FangZhengOracle', serif;">𠂇 (FangZhengOracle)</div>
+        <div class="font-test" style="font-family: 'ZhongYanYuan', serif;">𠂇 (ZhongYanYuan)</div>
+        <div class="font-test" style="font-family: serif;">𠂇 (serif默认)</div>
+    </div>
+    
+    <div class="test-section">
+        <h2>字体检测算法测试</h2>
+        <button onclick="testCharacter('手')">测试"手"字</button>
+        <button onclick="testCharacter('𠂇')">测试"𠂇"字</button>
+        <div id="debug-output" class="debug-info">点击按钮开始测试...</div>
+    </div>
+    
+    <script>
+        // 字体检测函数
+        function checkFontSupport(fontFamily, character) {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = 100;
+            canvas.height = 100;
+            
+            // 使用默认字体绘制
+            ctx.font = '48px serif';
+            ctx.fillText(character, 10, 50);
+            const defaultImageData = ctx.getImageData(0, 0, 100, 100);
+            
+            // 清除画布
+            ctx.clearRect(0, 0, 100, 100);
+            
+            // 使用测试字体绘制
+            ctx.font = `48px ${fontFamily}, serif`;
+            ctx.fillText(character, 10, 50);
+            const testImageData = ctx.getImageData(0, 0, 100, 100);
+            
+            // 比较像素差异
+            let diffPixels = 0;
+            for (let i = 0; i < defaultImageData.data.length; i += 4) {
+                if (defaultImageData.data[i] !== testImageData.data[i] ||
+                    defaultImageData.data[i + 1] !== testImageData.data[i + 1] ||
+                    defaultImageData.data[i + 2] !== testImageData.data[i + 2]) {
+                    diffPixels++;
+                }
+            }
+            
+            const totalPixels = defaultImageData.data.length / 4;
+            const diffPercentage = (diffPixels / totalPixels) * 100;
+            
+            return {
+                diffPixels,
+                totalPixels,
+                diffPercentage: diffPercentage.toFixed(2)
+            };
+        }
+        
+        function testCharacter(character) {
+            const fonts = ['HYChenTiJiaGuWen', 'OeasyOracle', 'FangZhengOracle', 'ZhongYanYuan'];
+            let output = `测试字符: ${character}\n`;
+            output += `时间: ${new Date().toLocaleTimeString()}\n\n`;
+            
+            fonts.forEach(font => {
+                const result = checkFontSupport(font, character);
+                output += `${font}:\n`;
+                output += `  差异像素: ${result.diffPixels}\n`;
+                output += `  总像素: ${result.totalPixels}\n`;
+                output += `  差异百分比: ${result.diffPercentage}%\n`;
+                output += `  阈值检查(2%): ${parseFloat(result.diffPercentage) >= 2 ? '通过' : '未通过'}\n\n`;
+            });
+            
+            document.getElementById('debug-output').textContent = output;
+        }
+        
+        // 页面加载完成后自动测试
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                testCharacter('手');
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

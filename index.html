@@ -9,8 +9,8 @@
         .age-selector {
             display: flex;
             justify-content: center;
-            gap: 15px;
-            margin: 15px 0;
+            gap: 12px;
+            margin: 8px 0;
             flex-wrap: wrap;
         }
         
@@ -54,35 +54,61 @@
         .character-grid {
             display: grid;
             grid-template-columns: repeat(10, 1fr);
-            gap: 8px;
-            margin: 10px 0;
-            padding: 5px;
-            max-height: 75vh;
+            gap: 1px;
+            margin: 2px 0;
+            padding: 1px;
+            max-height: none;
             overflow: visible;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        /* 年龄组特定布局 */
+        #grid-2 {
+            /* 2岁组：10个字，1行 */
+            grid-template-rows: repeat(1, 1fr);
+        }
+        
+        #grid-3 {
+            /* 3岁组：20个字，2行 */
+            grid-template-rows: repeat(2, 1fr);
+        }
+        
+        #grid-4 {
+            /* 4岁组：30个字，3行 */
+            grid-template-rows: repeat(3, 1fr);
+        }
+        
+        #grid-5 {
+            /* 5岁组：40个字，5行 */
+            grid-template-rows: repeat(5, 1fr);
         }
         
         /* 平板电脑适配 */
         @media (max-width: 1024px) {
             .character-grid {
                 grid-template-columns: repeat(10, 1fr);
-                gap: 6px;
-                max-height: 80vh;
+                gap: 1px;
             }
         }
         
         @media (max-width: 768px) {
             .character-grid {
                 grid-template-columns: repeat(8, 1fr);
-                gap: 5px;
-                max-height: 82vh;
+                gap: 1px;
+            }
+            
+            #grid-3, #grid-4, #grid-5 {
+                /* 移动设备上调整行数以适应8列布局 */
+                grid-template-rows: none;
             }
         }
         
         .character-card {
             background: linear-gradient(135deg, #E3F2FD, #BBDEFB);
             border: 1px solid #2196F3;
-            border-radius: 8px;
-            padding: 6px 4px;
+            border-radius: 3px;
+            padding: 2px 1px;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -92,6 +118,10 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
+            min-height: 50px;
+            box-sizing: border-box;
+            width: 100%;
+            margin: 0;
         }
         
         .character-card:hover {
@@ -102,43 +132,43 @@
         }
         
         .character-display {
-            font-size: 24px;
+            font-size: 20px;
             font-weight: bold;
             color: #1976D2;
-            margin-bottom: 3px;
-            font-family: 'FangZhengOracle', 'HYChenTiJiaGuWen', 'ZhongYanYuan', 'OeasyOracle', serif;
+            margin-bottom: 1px;
+            font-family: 'FangZhengOracle', 'ZhongYanYuan', 'OeasyOracle', serif;
             line-height: 1;
         }
         
         @media (max-width: 1024px) {
-            .character-display {
-                font-size: 22px;
-                margin-bottom: 2px;
-            }
-        }
-        
-        @media (max-width: 768px) {
             .character-display {
                 font-size: 20px;
                 margin-bottom: 2px;
             }
         }
         
+        @media (max-width: 768px) {
+            .character-display {
+                font-size: 18px;
+                margin-bottom: 1px;
+            }
+        }
+        
         .character-info {
-            font-size: 9px;
+            font-size: 7px;
             color: #424242;
-            line-height: 1.1;
+            line-height: 1;
         }
         
         @media (max-width: 1024px) {
             .character-info {
-                font-size: 8px;
+                font-size: 7px;
             }
         }
         
         @media (max-width: 768px) {
             .character-info {
-                font-size: 7px;
+                font-size: 6px;
             }
         }
         
@@ -154,9 +184,9 @@
         
         .section-title {
             text-align: center;
-            font-size: 24px;
+            font-size: 22px;
             color: #2E7D32;
-            margin: 10px 0;
+            margin: 6px 0;
             text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
         }
         
@@ -189,9 +219,9 @@
             margin: 0 auto;
             background: white;
             border-radius: 15px;
-            padding: 15px;
+            padding: 8px;
             box-shadow: 0 4px 16px rgba(0,0,0,0.1);
-            height: calc(100vh - 30px);
+            height: calc(100vh - 16px);
             overflow: hidden;
             display: flex;
             flex-direction: column;
@@ -199,7 +229,7 @@
         
         .age-section {
             flex: 1;
-            overflow: hidden;
+            overflow: visible;
             display: none;
         }
         
@@ -207,10 +237,65 @@
             display: flex;
             flex-direction: column;
         }
+        
+        /* 音频控制样式 */
+        .audio-controls {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 6px;
+            margin-bottom: 4px;
+            padding: 3px 8px;
+        }
+        
+        .volume-icon {
+            font-size: 20px;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .volume-slider {
+            width: 100px;
+            height: 6px;
+            border-radius: 3px;
+            background: #ddd;
+            outline: none;
+            cursor: pointer;
+        }
+        
+        .volume-slider::-webkit-slider-thumb {
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #4CAF50;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .volume-slider::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #4CAF50;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
     </style>
 </head>
 <body>
+    <!-- 背景音乐 -->
+    <audio id="bgmAudio" loop preload="auto">
+        <source src="audio/bgm.mp3" type="audio/mpeg">
+    </audio>
+    
     <div class="container">
+        <!-- 音量控制 -->
+        <div class="audio-controls">
+            <input type="range" id="volumeSlider" min="0" max="100" value="50" class="volume-slider">
+        </div>
+        
         <div class="age-selector">
             <button class="age-btn active" onclick="showAge(2)">👶 2岁 (10字)</button>
             <button class="age-btn" onclick="showAge(3)">🧒 3岁 (20字)</button>
@@ -220,25 +305,25 @@
         
         <!-- 2岁汉字 -->
         <div id="age-2" class="age-section active">
-            <h2 class="section-title">👶 2岁宝宝学汉字 (10个字)</h2>
+            <h2 class="section-title">👶 2岁宝宝学汉字 (10个字 - 1行)</h2>
             <div class="character-grid" id="grid-2"></div>
         </div>
         
         <!-- 3岁汉字 -->
         <div id="age-3" class="age-section">
-            <h2 class="section-title">🧒 3岁小朋友学汉字 (20个字)</h2>
+            <h2 class="section-title">🧒 3岁小朋友学汉字 (20个字 - 2行)</h2>
             <div class="character-grid" id="grid-3"></div>
         </div>
         
         <!-- 4岁汉字 -->
         <div id="age-4" class="age-section">
-            <h2 class="section-title">👦 4岁小朋友学汉字 (30个字)</h2>
+            <h2 class="section-title">👦 4岁小朋友学汉字 (30个字 - 3行)</h2>
             <div class="character-grid" id="grid-4"></div>
         </div>
         
         <!-- 5岁汉字 -->
         <div id="age-5" class="age-section">
-            <h2 class="section-title">👧 5岁小朋友学汉字 (40个字)</h2>
+            <h2 class="section-title">👧 5岁小朋友学汉字 (40个字 - 5行)</h2>
             <div class="character-grid" id="grid-5"></div>
         </div>
     </div>
@@ -247,9 +332,9 @@
         // 年龄段汉字数据（每个年龄段的汉字不重复）
         const ageCharacters = {
             2: ['一', '二', '三', '人', '大', '小', '目', '手', '日', '月'],
-            3: ['四', '五', '六', '七', '八', '九', '十', '口', '耳', '心', '木', '火', '水', '土', '山', '天', '地', '上', '下', '中'],
-            4: ['牛', '马', '羊', '犬', '鸟', '鱼', '虫', '龟', '父', '母', '子', '女', '男', '老', '少', '来', '去', '出', '入', '左', '右', '前', '后', '东', '西', '南', '北', '白', '黑', '红'],
-            5: ['门', '户', '窗', '房', '车', '船', '刀', '弓', '矢', '网', '田', '米', '禾', '麦', '豆', '瓜', '果', '花', '草', '叶', '根', '枝', '石', '金', '玉', '贝', '钱', '衣', '食', '住', '行', '学', '问', '听', '看', '说', '笑', '哭', '好', '坏']
+            3: ['四', '五', '六', '七', '八', '九', '十', '口', '耳', '心', '木', '火', '水', '土', '天', '上', '下', '金', '工', '厂'],
+            4: ['牛', '马', '羊', '犬', '鸟', '虫', '父', '母', '子', '女', '田', '老', '入', '东', '西', '南', '北', '白', '电', '刀', '弓', '矢', '网', '石', '兄', '自', '牙', '爪', '内', '外'],
+            5: ['户', '米', '禾', '豆', '瓜', '果', '花', '叶', '贝', '衣', '食', '行', '云', '雨', '雪', '风', '气', '力', '竹', '丝', '血', '骨', '肉', '皮', '毛', '身', '头', '足', '立', '见', '言', '止', '中', '弟', '青', '屮', '山', '川', '井', '鱼']
         };
         
         // 汉字信息数据库（扩展版）
@@ -280,7 +365,6 @@
             '土': { pronunciation: 'tǔ', meaning: '土地' },
             '山': { pronunciation: 'shān', meaning: '山峰' },
             '天': { pronunciation: 'tiān', meaning: '天空' },
-            '地': { pronunciation: 'dì', meaning: '大地' },
             '上': { pronunciation: 'shàng', meaning: '上面' },
             '下': { pronunciation: 'xià', meaning: '下面' },
             '中': { pronunciation: 'zhōng', meaning: '中间' },
@@ -289,71 +373,90 @@
             '羊': { pronunciation: 'yáng', meaning: '羊' },
             '犬': { pronunciation: 'quǎn', meaning: '狗' },
             '鸟': { pronunciation: 'niǎo', meaning: '鸟' },
-            '鱼': { pronunciation: 'yú', meaning: '鱼' },
             '虫': { pronunciation: 'chóng', meaning: '虫子' },
-            '龟': { pronunciation: 'guī', meaning: '乌龟' },
+            '电': { pronunciation: 'diàn', meaning: '闪电' },
             '父': { pronunciation: 'fù', meaning: '父亲' },
             '母': { pronunciation: 'mǔ', meaning: '母亲' },
             '子': { pronunciation: 'zǐ', meaning: '儿子' },
             '女': { pronunciation: 'nǚ', meaning: '女儿' },
-            '男': { pronunciation: 'nán', meaning: '男性' },
             '老': { pronunciation: 'lǎo', meaning: '年老' },
-            '少': { pronunciation: 'shào', meaning: '年少' },
-            '来': { pronunciation: 'lái', meaning: '来到' },
-            '去': { pronunciation: 'qù', meaning: '离去' },
-            '出': { pronunciation: 'chū', meaning: '出来' },
             '入': { pronunciation: 'rù', meaning: '进入' },
             '左': { pronunciation: 'zuǒ', meaning: '左边' },
             '右': { pronunciation: 'yòu', meaning: '右边' },
-            '前': { pronunciation: 'qián', meaning: '前面' },
-            '后': { pronunciation: 'hòu', meaning: '后面' },
+
             '东': { pronunciation: 'dōng', meaning: '东方' },
             '西': { pronunciation: 'xī', meaning: '西方' },
             '南': { pronunciation: 'nán', meaning: '南方' },
             '北': { pronunciation: 'běi', meaning: '北方' },
             '白': { pronunciation: 'bái', meaning: '白色' },
-            '黑': { pronunciation: 'hēi', meaning: '黑色' },
-            '红': { pronunciation: 'hóng', meaning: '红色' },
-            '门': { pronunciation: 'mén', meaning: '门' },
             '户': { pronunciation: 'hù', meaning: '门户' },
-            '窗': { pronunciation: 'chuāng', meaning: '窗户' },
-            '房': { pronunciation: 'fáng', meaning: '房屋' },
-            '车': { pronunciation: 'chē', meaning: '车辆' },
-            '船': { pronunciation: 'chuán', meaning: '船只' },
-            '刀': { pronunciation: 'dāo', meaning: '刀具' },
-            '弓': { pronunciation: 'gōng', meaning: '弓箭' },
-            '矢': { pronunciation: 'shǐ', meaning: '箭' },
-            '网': { pronunciation: 'wǎng', meaning: '网' },
+
+
+
+
+
             '田': { pronunciation: 'tián', meaning: '田地' },
             '米': { pronunciation: 'mǐ', meaning: '米粒' },
             '禾': { pronunciation: 'hé', meaning: '禾苗' },
-            '麦': { pronunciation: 'mài', meaning: '麦子' },
+
             '豆': { pronunciation: 'dòu', meaning: '豆子' },
             '瓜': { pronunciation: 'guā', meaning: '瓜果' },
             '果': { pronunciation: 'guǒ', meaning: '果实' },
             '花': { pronunciation: 'huā', meaning: '花朵' },
-            '草': { pronunciation: 'cǎo', meaning: '草' },
+
             '叶': { pronunciation: 'yè', meaning: '叶子' },
-            '根': { pronunciation: 'gēn', meaning: '根部' },
-            '枝': { pronunciation: 'zhī', meaning: '树枝' },
+
             '石': { pronunciation: 'shí', meaning: '石头' },
             '金': { pronunciation: 'jīn', meaning: '金子' },
-            '玉': { pronunciation: 'yù', meaning: '玉石' },
+
             '贝': { pronunciation: 'bèi', meaning: '贝壳' },
-            '钱': { pronunciation: 'qián', meaning: '钱币' },
+
             '衣': { pronunciation: 'yī', meaning: '衣服' },
             '食': { pronunciation: 'shí', meaning: '食物' },
-            '住': { pronunciation: 'zhù', meaning: '居住' },
+
             '行': { pronunciation: 'xíng', meaning: '行走' },
-            '学': { pronunciation: 'xué', meaning: '学习' },
-            '问': { pronunciation: 'wèn', meaning: '询问' },
+
+
             '听': { pronunciation: 'tīng', meaning: '听见' },
             '看': { pronunciation: 'kàn', meaning: '看见' },
-            '说': { pronunciation: 'shuō', meaning: '说话' },
-            '笑': { pronunciation: 'xiào', meaning: '笑' },
-            '哭': { pronunciation: 'kū', meaning: '哭' },
-            '好': { pronunciation: 'hǎo', meaning: '好的' },
-            '坏': { pronunciation: 'huài', meaning: '坏的' }
+            '云': { pronunciation: 'yún', meaning: '云朵' },
+            '雨': { pronunciation: 'yǔ', meaning: '雨水' },
+            '雪': { pronunciation: 'xuě', meaning: '雪花' },
+            '风': { pronunciation: 'fēng', meaning: '风' },
+            '气': { pronunciation: 'qì', meaning: '气体' },
+            '力': { pronunciation: 'lì', meaning: '力气' },
+            '竹': { pronunciation: 'zhú', meaning: '竹子' },
+            '丝': { pronunciation: 'sī', meaning: '丝线' },
+            '血': { pronunciation: 'xuè', meaning: '血液' },
+            '骨': { pronunciation: 'gǔ', meaning: '骨头' },
+            '肉': { pronunciation: 'ròu', meaning: '肉' },
+            '皮': { pronunciation: 'pí', meaning: '皮肤' },
+            '毛': { pronunciation: 'máo', meaning: '毛发' },
+            '身': { pronunciation: 'shēn', meaning: '身体' },
+            '头': { pronunciation: 'tóu', meaning: '头部' },
+            '足': { pronunciation: 'zú', meaning: '脚' },
+            '立': { pronunciation: 'lì', meaning: '站立' },
+            '见': { pronunciation: 'jiàn', meaning: '看见' },
+            '言': { pronunciation: 'yán', meaning: '说话' },
+            '止': { pronunciation: 'zhǐ', meaning: '停止' },
+            '刀': { pronunciation: 'dāo', meaning: '刀' },
+            '弓': { pronunciation: 'gōng', meaning: '弓' },
+            '矢': { pronunciation: 'shǐ', meaning: '箭' },
+            '网': { pronunciation: 'wǎng', meaning: '网' },
+            '兄': { pronunciation: 'xiōng', meaning: '哥哥' },
+            '弟': { pronunciation: 'dì', meaning: '弟弟' },
+            '青': { pronunciation: 'qīng', meaning: '青色' },
+            '屮': { pronunciation: 'chè', meaning: '草木初生' },
+            '自': { pronunciation: 'zì', meaning: '自己' },
+            '牙': { pronunciation: 'yá', meaning: '牙齿' },
+            '工': { pronunciation: 'gōng', meaning: '工作' },
+            '厂': { pronunciation: 'chǎng', meaning: '工厂' },
+            '爪': { pronunciation: 'zhǎo', meaning: '爪子' },
+            '内': { pronunciation: 'nèi', meaning: '里面' },
+            '外': { pronunciation: 'wài', meaning: '外面' },
+            '川': { pronunciation: 'chuān', meaning: '河流' },
+            '井': { pronunciation: 'jǐng', meaning: '水井' },
+            '鱼': { pronunciation: 'yú', meaning: '鱼' }
         };
         
         // 显示指定年龄段
@@ -404,8 +507,53 @@
             });
         }
         
+        // 音频控制功能
+        let bgmAudio;
+        let volumeSlider;
+        
+        function initAudio() {
+            bgmAudio = document.getElementById('bgmAudio');
+            volumeSlider = document.getElementById('volumeSlider');
+            
+            // 从localStorage恢复音量设置
+            const savedVolume = localStorage.getItem('oracleAudioVolume');
+            const volume = savedVolume ? parseInt(savedVolume) : 50;
+            
+            // 设置音量
+            volumeSlider.value = volume;
+            bgmAudio.volume = volume / 100;
+            
+            console.log('首页恢复音量设置:', volume);
+            
+            // 音量滑块事件
+            volumeSlider.addEventListener('input', function() {
+                const volume = this.value / 100;
+                bgmAudio.volume = volume;
+                
+                // 保存音量设置到localStorage
+                localStorage.setItem('oracleAudioVolume', this.value);
+            });
+            
+            // 尝试自动播放背景音乐
+            const playBgm = () => {
+                bgmAudio.play().catch(e => {
+                    console.log('自动播放被阻止，需要用户交互后播放');
+                    // 添加点击事件监听器，用户首次交互后播放
+                    document.addEventListener('click', function playOnFirstClick() {
+                        bgmAudio.play();
+                        document.removeEventListener('click', playOnFirstClick);
+                    }, { once: true });
+                });
+            };
+            
+            playBgm();
+        }
+        
         // 页面加载完成后初始化
-        document.addEventListener('DOMContentLoaded', initPage);
+        document.addEventListener('DOMContentLoaded', function() {
+            initPage();
+            initAudio();
+        });
     </script>
 </body>
 </html>

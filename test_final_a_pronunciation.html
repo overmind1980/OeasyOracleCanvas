@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>最终ǎ音发音测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .test-button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .test-button:hover {
+            background: #45a049;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            background: #f0f0f0;
+        }
+        .success { color: #4CAF50; }
+        .error { color: #f44336; }
+        .info { color: #2196F3; }
+        .warning { color: #ff9800; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>最终ǎ音发音测试</h1>
+        <p>测试修改后的语音合成功能是否能正确发出ǎ的音</p>
+        
+        <div>
+            <button class="test-button" onclick="testDirectA()">直接发音 ǎ</button>
+            <button class="test-button" onclick="testMappedA()">映射发音 ǎ</button>
+            <button class="test-button" onclick="testPinyinDecomposition()">拼音分解发音测试</button>
+            <button class="test-button" onclick="testFullSequence()">完整序列测试</button>
+        </div>
+        
+        <div id="result" class="result"></div>
+    </div>
+
+    <script>
+        // 简化的拼音映射表
+        const pinyinToCharacterMap = {
+            "ǎ": "啊",
+            "á": "啊",
+            "à": "啊",
+            "ā": "啊",
+            "m": "摸",
+            "n": "呢",
+            "l": "了"
+        };
+        
+        function log(message, type = 'info') {
+            const resultDiv = document.getElementById('result');
+            const div = document.createElement('div');
+            div.className = type;
+            div.textContent = new Date().toLocaleTimeString() + ': ' + message;
+            resultDiv.appendChild(div);
+            console.log(message);
+        }
+        
+        // 直接发音ǎ
+        function testDirectA() {
+            log('开始直接发音测试: ǎ');
+            
+            const utterance = new SpeechSynthesisUtterance('ǎ');
+            utterance.lang = 'zh-CN';
+            utterance.rate = 0.8;
+            utterance.pitch = 1.0;
+            
+            utterance.onstart = () => log('直接发音开始: ǎ', 'success');
+            utterance.onend = () => log('直接发音结束: ǎ', 'success');
+            utterance.onerror = (e) => log('直接发音错误: ' + e.error, 'error');
+            
+            speechSynthesis.speak(utterance);
+        }
+        
+        // 使用映射汉字发音ǎ
+        function testMappedA() {
+            log('开始映射发音测试: ǎ -> 啊');
+            
+            const mappedChar = pinyinToCharacterMap['ǎ'];
+            if (!mappedChar) {
+                log('未找到ǎ的映射', 'error');
+                return;
+            }
+            
+            const utterance = new SpeechSynthesisUtterance(mappedChar);
+            utterance.lang = 'zh-CN';
+            utterance.rate = 0.8;
+            utterance.pitch = 1.0;
+            
+            utterance.onstart = () => log(`映射发音开始: ǎ -> ${mappedChar}`, 'success');
+            utterance.onend = () => log(`映射发音结束: ǎ -> ${mappedChar}`, 'success');
+            utterance.onerror = (e) => log('映射发音错误: ' + e.error, 'error');
+            
+            speechSynthesis.speak(utterance);
+        }
+        
+        // 模拟拼音分解发音
+        function testPinyinDecomposition() {
+            log('开始拼音分解发音测试');
+            
+            const sequence = ['m', 'ǎ'];
+            let currentIndex = 0;
+            
+            function speakNext() {
+                if (currentIndex >= sequence.length) {
+                    log('拼音分解发音完成', 'success');
+                    return;
+                }
+                
+                let textToSpeak = sequence[currentIndex];
+                log(`准备发音组件 ${currentIndex + 1}/${sequence.length}: ${textToSpeak}`);
+                
+                // 应用映射逻辑
+                if (pinyinToCharacterMap && typeof textToSpeak === 'string' && textToSpeak.length === 1 && /[āáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜ]/.test(textToSpeak)) {
+                    const mappedChar = pinyinToCharacterMap[textToSpeak];
+                    if (mappedChar) {
+                        log(`使用映射汉字发音: ${textToSpeak} -> ${mappedChar}`, 'info');
+                        textToSpeak = mappedChar;
+                    } else {
+                        log(`未找到映射，使用原始拼音: ${textToSpeak}`, 'warning');
+                    }
+                }
+                
+                const utterance = new SpeechSynthesisUtterance(textToSpeak);
+                utterance.lang = 'zh-CN';
+                utterance.rate = 0.6;
+                utterance.pitch = 1.0;
+                
+                utterance.onstart = () => log(`开始发音: ${textToSpeak}`, 'success');
+                utterance.onend = () => {
+                    log(`发音结束: ${textToSpeak}`, 'success');
+                    currentIndex++;
+                    setTimeout(speakNext, 500);
+                };
+                utterance.onerror = (e) => {
+                    log(`发音错误: ${textToSpeak} - ${e.error}`, 'error');
+                    currentIndex++;
+                    setTimeout(speakNext, 500);
+                };
+                
+                speechSynthesis.speak(utterance);
+            }
+            
+            speechSynthesis.cancel();
+            setTimeout(speakNext, 200);
+        }
+        
+        // 完整序列测试
+        function testFullSequence() {
+            log('开始完整序列测试: mǎ -> [摸, 啊, 马]');
+            
+            const sequence = ['摸', '啊', '马'];
+            let currentIndex = 0;
+            
+            function speakNext() {
+                if (currentIndex >= sequence.length) {
+                    log('完整序列发音完成', 'success');
+                    return;
+                }
+                
+                const textToSpeak = sequence[currentIndex];
+                log(`发音序列 ${currentIndex + 1}/${sequence.length}: ${textToSpeak}`);
+                
+                const utterance = new SpeechSynthesisUtterance(textToSpeak);
+                utterance.lang = 'zh-CN';
+                utterance.rate = 0.6;
+                utterance.pitch = 1.0;
+                
+                utterance.onstart = () => log(`开始发音: ${textToSpeak}`, 'success');
+                utterance.onend = () => {
+                    log(`发音结束: ${textToSpeak}`, 'success');
+                    currentIndex++;
+                    setTimeout(speakNext, 500);
+                };
+                utterance.onerror = (e) => {
+                    log(`发音错误: ${textToSpeak} - ${e.error}`, 'error');
+                    currentIndex++;
+                    setTimeout(speakNext, 500);
+                };
+                
+                speechSynthesis.speak(utterance);
+            }
+            
+            speechSynthesis.cancel();
+            setTimeout(speakNext, 200);
+        }
+        
+        // 页面加载完成后的初始化
+        window.addEventListener('load', () => {
+            log('页面加载完成，准备进行ǎ音发音测试');
+            
+            // 检查语音合成支持
+            if ('speechSynthesis' in window) {
+                log('✓ 浏览器支持语音合成', 'success');
+                
+                // 等待语音列表加载
+                setTimeout(() => {
+                    const voices = speechSynthesis.getVoices();
+                    log(`可用语音数量: ${voices.length}`);
+                    
+                    const chineseVoices = voices.filter(v => v.lang.startsWith('zh'));
+                    log(`中文语音数量: ${chineseVoices.length}`);
+                    
+                    if (chineseVoices.length > 0) {
+                        log(`首选中文语音: ${chineseVoices[0].name}`, 'success');
+                    }
+                }, 1000);
+            } else {
+                log('✗ 浏览器不支持语音合成', 'error');
+            }
+        });
+    </script>
+</body>
+</html>

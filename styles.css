@@ -5,11 +5,7 @@
     font-display: swap;
 }
 
-@font-face {
-    font-family: 'HYChenTiJiaGuWen';
-    src: url('./fonts/HYChenTiJiaGuWen.ttf') format('truetype');
-    font-display: swap;
-}
+
 
 @font-face {
     font-family: 'ZhongYanYuan';
@@ -173,6 +169,149 @@ body {
     background: #A0522D;
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+/* 音频控制样式 */
+.audio-controls {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-bottom: 10px;
+    padding: 10px;
+}
+
+
+
+.volume-slider {
+    width: 100px;
+    height: 6px;
+    border-radius: 3px;
+    background: rgba(139, 69, 19, 0.3);
+    outline: none;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.volume-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #8B4513;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    transition: all 0.2s ease;
+}
+
+.volume-slider::-webkit-slider-thumb:hover {
+    background: #A0522D;
+    transform: scale(1.1);
+}
+
+.volume-slider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #8B4513;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+/* 紧凑音量控制样式 */
+.volume-slider-compact {
+    width: 60px;
+    height: 4px;
+    border-radius: 2px;
+    background: rgba(139, 69, 19, 0.3);
+    outline: none;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    margin-left: 8px;
+}
+
+.volume-slider-compact::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #8B4513;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    transition: all 0.2s ease;
+}
+
+.volume-slider-compact::-webkit-slider-thumb:hover {
+    background: #A0522D;
+    transform: scale(1.1);
+}
+
+.volume-slider-compact::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #8B4513;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+/* 粒子特效样式 */
+.pencil-particle {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background: #ff6b6b;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 10000;
+    opacity: 1;
+    box-shadow: 0 0 8px rgba(255, 107, 107, 0.8), 0 0 16px rgba(255, 107, 107, 0.4);
+    border: 2px solid #ff4757;
+}
+
+.pencil-particle.large {
+    width: 16px;
+    height: 16px;
+    background: #ff3742;
+    box-shadow: 0 0 12px rgba(255, 55, 66, 0.9), 0 0 24px rgba(255, 55, 66, 0.5);
+    border: 2px solid #ff2f3a;
+}
+
+.pencil-particle.medium {
+    width: 14px;
+    height: 14px;
+    background: #ff4757;
+    box-shadow: 0 0 10px rgba(255, 71, 87, 0.8), 0 0 20px rgba(255, 71, 87, 0.4);
+    border: 2px solid #ff3742;
+}
+
+.pencil-particle.small {
+    width: 10px;
+    height: 10px;
+    background: #ff6b6b;
+    box-shadow: 0 0 6px rgba(255, 107, 107, 0.7), 0 0 12px rgba(255, 107, 107, 0.3);
+    border: 2px solid #ff4757;
+}
+
+@keyframes pencilParticleFall {
+    0% {
+        transform: translateY(0) rotate(0deg) scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: translateY(calc(var(--fall-distance, 50px) * 0.5)) rotate(calc(var(--rotation, 180deg) * 0.5)) scale(1.2);
+        opacity: 0.8;
+    }
+    100% {
+        transform: translateY(var(--fall-distance, 50px)) rotate(var(--rotation, 180deg)) scale(0.8);
+        opacity: 0;
+    }
 }
 
 /* 甲骨文画布区 */
@@ -403,6 +542,50 @@ body {
 
 .petal.falling {
     animation: petalFall 3s linear forwards, petalSway 1.5s ease-in-out infinite;
+}
+
+/* 竖屏优化 - 高度大于宽度时的特殊处理 */
+@media (orientation: portrait) {
+    .app-container {
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        padding: 8px;
+    }
+    
+    .info-section {
+        flex-shrink: 0;
+        padding: 8px;
+        margin-bottom: 8px;
+    }
+    
+    .canvas-section {
+        flex: 1;
+        min-height: 60vh; /* 确保画布占据至少60%的视口高度 */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px;
+    }
+    
+    #oracleCanvas {
+        width: 90vw; /* 使用视口宽度的90% */
+        height: 60vh; /* 使用视口高度的60% */
+        max-width: 500px;
+        max-height: 600px;
+    }
+}
+
+/* 横屏优化 - 宽度大于高度时保持原有布局 */
+@media (orientation: landscape) {
+    .canvas-section {
+        min-height: 400px;
+    }
+    
+    #oracleCanvas {
+        width: 100%;
+        height: 100%;
+    }
 }
 
 /* 响应式设计 */

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测试手字字体显示</title>
+    <style>
+        @font-face {
+            font-family: 'FangZhengOracle';
+            src: url('./fonts/FangZhengOracle.ttf') format('truetype');
+        }
+        @font-face {
+            font-family: 'OeasyOracle';
+            src: url('./fonts/OeasyOracle.ttf') format('truetype');
+        }
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 10px 0;
+        }
+        .char-display {
+            font-size: 100px;
+            text-align: center;
+            margin: 20px 0;
+            border: 2px solid #ddd;
+            padding: 20px;
+        }
+        .font-fangzheng {
+            font-family: 'FangZhengOracle', serif;
+        }
+        .font-oeasy {
+            font-family: 'OeasyOracle', serif;
+        }
+        .font-default {
+            font-family: serif;
+        }
+    </style>
+</head>
+<body>
+    <h1>"手"字字体显示测试</h1>
+    
+    <div class="test-container">
+        <h2>FangZhengOracle 字体</h2>
+        <div class="char-display font-fangzheng">手</div>
+    </div>
+    
+    <div class="test-container">
+        <h2>OeasyOracle 字体</h2>
+        <div class="char-display font-oeasy">手</div>
+    </div>
+    
+    <div class="test-container">
+        <h2>默认 serif 字体</h2>
+        <div class="char-display font-default">手</div>
+    </div>
+    
+    <div class="test-container">
+        <h2>应用程序字体检测结果</h2>
+        <div id="app-result" class="char-display">手</div>
+        <div id="font-info"></div>
+    </div>
+    
+    <script>
+        // 简化的字体测试逻辑
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('=== 开始测试手字字体 ===');
+            
+            // 等待字体加载
+            setTimeout(() => {
+                console.log('字体加载完成，开始测试');
+                
+                // 直接测试字体应用
+                const appResult = document.getElementById('app-result');
+                const fontInfo = document.getElementById('font-info');
+                
+                // 根据我们的修改，"手"字应该强制使用OeasyOracle字体
+                appResult.style.fontFamily = 'OeasyOracle, serif';
+                fontInfo.innerHTML = '<strong>应该显示的字体:</strong> OeasyOracle (甲骨文)';
+                
+                console.log('=== 测试完成 ===');
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

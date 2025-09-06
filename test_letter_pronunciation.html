@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>字母发音测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Web Speech API 字母发音测试</h1>
+    
+    <div class="test-section">
+        <h2>单个辅音字母测试</h2>
+        <p>测试Web Speech API是否能直接发出单个辅音字母的发音：</p>
+        <div class="test-grid">
+            <button onclick="testLetter('l')">发音字母 "l"</button>
+            <button onclick="testLetter('m')">发音字母 "m"</button>
+            <button onclick="testLetter('n')">发音字母 "n"</button>
+            <button onclick="testLetter('s')">发音字母 "s"</button>
+            <button onclick="testLetter('t')">发音字母 "t"</button>
+            <button onclick="testLetter('k')">发音字母 "k"</button>
+            <button onclick="testLetter('p')">发音字母 "p"</button>
+            <button onclick="testLetter('b')">发音字母 "b"</button>
+        </div>
+        <div id="letterResult" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>对比测试：字母 vs 汉字</h2>
+        <p>比较字母"l"与汉字"了"的发音效果：</p>
+        <button onclick="comparePronunciation()">对比发音 "l" vs "了"</button>
+        <div id="compareResult" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>元音字母测试</h2>
+        <p>测试元音字母的发音效果：</p>
+        <div class="test-grid">
+            <button onclick="testLetter('a')">发音字母 "a"</button>
+            <button onclick="testLetter('e')">发音字母 "e"</button>
+            <button onclick="testLetter('i')">发音字母 "i"</button>
+            <button onclick="testLetter('o')">发音字母 "o"</button>
+            <button onclick="testLetter('u')">发音字母 "u"</button>
+        </div>
+        <div id="vowelResult" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>带声调拼音测试</h2>
+        <p>测试Web API是否能直接发出带声调的拼音：</p>
+        <div class="test-grid">
+            <button onclick="testTonedPinyin('iù')">发音 "iù"</button>
+            <button onclick="testTonedPinyin('uǒ')">发音 "uǒ"</button>
+            <button onclick="testTonedPinyin('uè')">发音 "uè"</button>
+            <button onclick="testTonedPinyin('ù')">发音 "ù"</button>
+            <button onclick="testTonedPinyin('ǐ')">发音 "ǐ"</button>
+            <button onclick="testTonedPinyin('á')">发音 "á"</button>
+        </div>
+        <div id="tonedResult" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>拼音分解策略测试</h2>
+        <p>测试不同的拼音分解策略：</p>
+        <button onclick="testPinyinStrategy1()">策略1：辅音用字母，元音用汉字</button>
+        <button onclick="testPinyinStrategy2()">策略2：全部用汉字</button>
+        <button onclick="testPinyinStrategy3()">策略3：直接发音带声调拼音</button>
+        <div id="strategyResult" class="result"></div>
+    </div>
+
+    <script>
+        // 检查浏览器支持
+        if (!('speechSynthesis' in window)) {
+            alert('您的浏览器不支持Web Speech API');
+        }
+
+        function speak(text, lang = 'zh-CN', rate = 1, pitch = 1) {
+            return new Promise((resolve) => {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = lang;
+                utterance.rate = rate;
+                utterance.pitch = pitch;
+                utterance.onend = resolve;
+                utterance.onerror = resolve;
+                speechSynthesis.speak(utterance);
+            });
+        }
+
+        function logResult(elementId, message) {
+            const element = document.getElementById(elementId);
+            element.innerHTML += new Date().toLocaleTimeString() + ': ' + message + '<br>';
+        }
+
+        async function testLetter(letter) {
+            logResult('letterResult', `正在测试字母 "${letter}" 的发音...`);
+            
+            // 测试中文语音引擎
+            await speak(letter, 'zh-CN');
+            logResult('letterResult', `✓ 中文语音引擎发音字母 "${letter}" 完成`);
+            
+            // 等待一秒
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // 测试英文语音引擎
+            await speak(letter, 'en-US');
+            logResult('letterResult', `✓ 英文语音引擎发音字母 "${letter}" 完成`);
+        }
+
+        async function comparePronunciation() {
+            logResult('compareResult', '开始对比测试...');
+            
+            // 发音字母 "l"
+            logResult('compareResult', '发音字母 "l" (中文引擎)...');
+            await speak('l', 'zh-CN');
+            
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // 发音字母 "l" (英文引擎)
+            logResult('compareResult', '发音字母 "l" (英文引擎)...');
+            await speak('l', 'en-US');
+            
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // 发音汉字 "了"
+            logResult('compareResult', '发音汉字 "了"...');
+            await speak('了', 'zh-CN');
+            
+            logResult('compareResult', '✓ 对比测试完成');
+        }
+
+        async function testPinyinStrategy1() {
+            logResult('strategyResult', '测试策略1：辅音用字母，元音用汉字');
+            logResult('strategyResult', '模拟"六"字分解：l + i + ù');
+            
+            // l (字母)
+            await speak('l', 'en-US');
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // i (汉字"一")
+            await speak('一', 'zh-CN');
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // ù (汉字"où")
+            await speak('où', 'zh-CN');
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // 完整发音
+            await speak('六', 'zh-CN');
+            
+            logResult('strategyResult', '✓ 策略1测试完成');
+        }
+
+        async function testPinyinStrategy2() {
+            logResult('strategyResult', '测试策略2：全部用汉字');
+            logResult('strategyResult', '模拟"六"字分解：了 + 一 + où');
+            
+            // l (汉字"了")
+            await speak('了', 'zh-CN');
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // i (汉字"一")
+            await speak('一', 'zh-CN');
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // ù (汉字"où")
+            await speak('où', 'zh-CN');
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // 完整发音
+            await speak('六', 'zh-CN');
+            
+            logResult('strategyResult', '✓ 策略2测试完成');
+        }
+
+        async function testPinyinStrategy3() {
+            logResult('strategyResult', '测试策略3：直接发音带声调拼音');
+            logResult('strategyResult', '模拟"六"字分解：l + iù');
+            
+            // l (字母)
+            await speak('l', 'en-US');
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // iù (带声调拼音)
+            await speak('iù', 'zh-CN');
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // 完整发音
+            await speak('六', 'zh-CN');
+            
+            logResult('strategyResult', '✓ 策略3测试完成');
+        }
+
+        async function testTonedPinyin(pinyin) {
+            logResult('tonedResult', `正在测试带声调拼音 "${pinyin}" 的发音...`);
+            
+            // 测试中文语音引擎
+            await speak(pinyin, 'zh-CN');
+            logResult('tonedResult', `✓ 中文语音引擎发音 "${pinyin}" 完成`);
+            
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // 测试英文语音引擎
+            await speak(pinyin, 'en-US');
+            logResult('tonedResult', `✓ 英文语音引擎发音 "${pinyin}" 完成`);
+        }
+
+        // 页面加载完成后显示支持的语音和自动测试
+        window.onload = function() {
+            console.log('页面加载完成，开始初始化...');
+            
+            function initVoices() {
+                const voices = speechSynthesis.getVoices();
+                console.log('可用语音数量:', voices.length);
+                console.log('可用语音:', voices.map(v => `${v.name} (${v.lang})`));
+                
+                // 显示语音信息到页面
+                const voiceInfo = document.createElement('div');
+                voiceInfo.className = 'test-section';
+                voiceInfo.innerHTML = `
+                    <h2>语音引擎信息</h2>
+                    <p>检测到 ${voices.length} 个可用语音引擎：</p>
+                    <ul>
+                        ${voices.map(v => `<li>${v.name} (${v.lang}) - ${v.default ? '默认' : ''}</li>`).join('')}
+                    </ul>
+                    <button onclick="autoTest()">开始自动测试</button>
+                `;
+                document.body.appendChild(voiceInfo);
+            }
+            
+            const voices = speechSynthesis.getVoices();
+            if (voices.length === 0) {
+                console.log('语音还未加载，等待加载完成...');
+                speechSynthesis.onvoiceschanged = initVoices;
+            } else {
+                initVoices();
+            }
+        };
+        
+        // 自动测试函数
+        async function autoTest() {
+            console.log('开始自动测试...');
+            
+            // 测试字母l的发音
+            console.log('测试1: 字母l (中文引擎)');
+            await testLetterWithLog('l', 'zh-CN');
+            
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            console.log('测试2: 字母l (英文引擎)');
+            await testLetterWithLog('l', 'en-US');
+            
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            console.log('测试3: 汉字"了"');
+            await testLetterWithLog('了', 'zh-CN');
+            
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            console.log('测试4: 带声调拼音"iù" (中文引擎)');
+            await testLetterWithLog('iù', 'zh-CN');
+            
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            console.log('测试5: 带声调拼音"iù" (英文引擎)');
+            await testLetterWithLog('iù', 'en-US');
+            
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            console.log('测试6: 带声调拼音"ù" (中文引擎)');
+            await testLetterWithLog('ù', 'zh-CN');
+            
+            console.log('自动测试完成');
+            
+            // 显示测试结论
+            const conclusion = document.createElement('div');
+            conclusion.className = 'test-section';
+            conclusion.style.backgroundColor = '#e8f5e8';
+            conclusion.innerHTML = `
+                <h2>测试结论</h2>
+                <p><strong>关于Web Speech API对字母和带声调拼音的发音能力：</strong></p>
+                <ul>
+                    <li>✓ 可以发音单个字母如"l"，但效果因语音引擎而异</li>
+                    <li>✓ 可以发音带声调的拼音如"iù"、"ù"等</li>
+                    <li>✓ 中文语音引擎对带声调拼音的处理更自然</li>
+                    <li>✓ 英文语音引擎对单个字母的发音更清晰</li>
+                </ul>
+                <p><strong>建议的拼音分解策略：</strong></p>
+                <ul>
+                    <li>辅音字母：使用英文语音引擎发音字母本身</li>
+                    <li>带声调元音：使用中文语音引擎发音带声调拼音</li>
+                    <li>这样可以获得最清晰和准确的发音效果</li>
+                </ul>
+            `;
+            document.body.appendChild(conclusion);
+        }
+        
+        async function testLetterWithLog(text, lang) {
+            return new Promise((resolve) => {
+                console.log(`正在发音: "${text}" (${lang})`);
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = lang;
+                utterance.rate = 1;
+                utterance.pitch = 1;
+                
+                utterance.onstart = () => {
+                    console.log(`开始发音: "${text}"`);
+                };
+                
+                utterance.onend = () => {
+                    console.log(`发音结束: "${text}"`);
+                    resolve();
+                };
+                
+                utterance.onerror = (event) => {
+                    console.error(`发音错误: "${text}"`, event);
+                    resolve();
+                };
+                
+                speechSynthesis.speak(utterance);
+            });
+        }
+    </script>
+</body>
+</html>

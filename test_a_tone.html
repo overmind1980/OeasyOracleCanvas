@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ǎ音发音测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-section h3 {
+            color: #34495e;
+            margin-top: 0;
+        }
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background: #2980b9;
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .voice-info {
+            background: #e8f5e8;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .solution {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>ǎ音发音测试</h1>
+        
+        <div class="test-section">
+            <h3>问题描述</h3>
+            <p>Web Speech API在发音带声调的拼音字母时可能不准确，特别是三声ǎ。本页面测试不同的解决方案。</p>
+        </div>
+
+        <div class="test-section">
+            <h3>当前语音引擎信息</h3>
+            <div class="voice-info" id="voiceInfo">加载中...</div>
+            <button onclick="loadVoiceInfo()">刷新语音信息</button>
+        </div>
+
+        <div class="test-section">
+            <h3>基础测试：直接发音ǎ</h3>
+            <button onclick="testBasicA()">测试 ǎ (直接发音)</button>
+            <button onclick="testBasicAWithLang('zh-CN')">测试 ǎ (zh-CN)</button>
+            <button onclick="testBasicAWithLang('zh-TW')">测试 ǎ (zh-TW)</button>
+            <button onclick="testBasicAWithLang('cmn-CN')">测试 ǎ (cmn-CN)</button>
+        </div>
+
+        <div class="test-section">
+            <h3>解决方案1：使用汉字替代</h3>
+            <p>将ǎ替换为汉字"啊"来发音</p>
+            <button onclick="testWithCharacter('啊')">测试 啊 (替代ǎ)</button>
+            <button onclick="testWithCharacter('矮')">测试 矮 (ǎi音)</button>
+        </div>
+
+        <div class="test-section">
+            <h3>解决方案2：调整语音参数</h3>
+            <p>通过调整语速、音高等参数改善发音</p>
+            <button onclick="testWithParams('ǎ', 0.3, 0.8)">测试 ǎ (慢速+低音)</button>
+            <button onclick="testWithParams('ǎ', 0.5, 1.2)">测试 ǎ (中速+高音)</button>
+            <button onclick="testWithParams('ǎ', 0.8, 1.0)">测试 ǎ (快速+正常音)</button>
+        </div>
+
+        <div class="test-section">
+            <h3>解决方案3：SSML标记</h3>
+            <p>使用SSML标记语言指定发音</p>
+            <button onclick="testWithSSML()">测试 SSML 标记</button>
+        </div>
+
+        <div class="test-section">
+            <h3>解决方案4：拼音数字标记</h3>
+            <p>使用数字标记声调：a3 表示三声</p>
+            <button onclick="testWithNumberTone('a3')">测试 a3 (数字声调)</button>
+            <button onclick="testWithNumberTone('a 3')">测试 a 3 (分开)</button>
+        </div>
+
+        <div class="test-section">
+            <h3>解决方案5：特定语音引擎</h3>
+            <p>尝试使用不同的中文语音引擎</p>
+            <div id="voiceButtons">加载中...</div>
+        </div>
+
+        <div class="test-section">
+            <h3>测试日志</h3>
+            <div class="log" id="log"></div>
+            <button onclick="clearLog()">清空日志</button>
+        </div>
+
+        <div class="solution">
+            <h3>推荐解决方案</h3>
+            <p id="recommendation">正在分析最佳解决方案...</p>
+        </div>
+    </div>
+
+    <script>
+        let availableVoices = [];
+        let testResults = {};
+
+        // 日志函数
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `[${timestamp}] ${message}<br>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message);
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+
+        // 加载语音信息
+        function loadVoiceInfo() {
+            const voices = speechSynthesis.getVoices();
+            availableVoices = voices;
+            
+            const chineseVoices = voices.filter(voice => 
+                voice.lang.includes('zh') || voice.lang.includes('cmn')
+            );
+            
+            let info = `<strong>总语音数量:</strong> ${voices.length}<br>`;
+            info += `<strong>中文语音数量:</strong> ${chineseVoices.length}<br><br>`;
+            
+            if (chineseVoices.length > 0) {
+                info += '<strong>可用中文语音:</strong><br>';
+                chineseVoices.forEach((voice, index) => {
+                    info += `${index + 1}. ${voice.name} (${voice.lang}) - ${voice.localService ? '本地' : '在线'}<br>`;
+                });
+            } else {
+                info += '<span style="color: red;">未找到中文语音引擎</span>';
+            }
+            
+            document.getElementById('voiceInfo').innerHTML = info;
+            
+            // 生成语音引擎测试按钮
+            generateVoiceButtons(chineseVoices);
+            
+            log(`加载了 ${voices.length} 个语音，其中 ${chineseVoices.length} 个中文语音`);
+        }
+
+        // 生成语音引擎测试按钮
+        function generateVoiceButtons(chineseVoices) {
+            const container = document.getElementById('voiceButtons');
+            if (chineseVoices.length === 0) {
+                container.innerHTML = '<p style="color: red;">没有可用的中文语音引擎</p>';
+                return;
+            }
+            
+            let buttons = '';
+            chineseVoices.forEach((voice, index) => {
+                buttons += `<button onclick="testWithSpecificVoice('ǎ', ${index})">${voice.name}</button>`;
+            });
+            container.innerHTML = buttons;
+        }
+
+        // 基础测试
+        function testBasicA() {
+            log('=== 基础测试：直接发音ǎ ===');
+            const utterance = new SpeechSynthesisUtterance('ǎ');
+            
+            utterance.onstart = () => log('开始发音: ǎ');
+            utterance.onend = () => {
+                log('发音完成: ǎ');
+                testResults['basic'] = 'completed';
+            };
+            utterance.onerror = (e) => {
+                log(`发音错误: ${e.error}`);
+                testResults['basic'] = 'error';
+            };
+            
+            speechSynthesis.speak(utterance);
+        }
+
+        // 指定语言测试
+        function testBasicAWithLang(lang) {
+            log(`=== 测试ǎ with ${lang} ===`);
+            const utterance = new SpeechSynthesisUtterance('ǎ');
+            utterance.lang = lang;
+            
+            utterance.onstart = () => log(`开始发音: ǎ (${lang})`);
+            utterance.onend = () => {
+                log(`发音完成: ǎ (${lang})`);
+                testResults[`lang_${lang}`] = 'completed';
+            };
+            utterance.onerror = (e) => {
+                log(`发音错误 (${lang}): ${e.error}`);
+                testResults[`lang_${lang}`] = 'error';
+            };
+            
+            speechSynthesis.speak(utterance);
+        }
+
+        // 使用汉字替代
+        function testWithCharacter(character) {
+            log(`=== 测试汉字替代: ${character} ===`);
+            const utterance = new SpeechSynthesisUtterance(character);
+            utterance.lang = 'zh-CN';
+            
+            utterance.onstart = () => log(`开始发音: ${character}`);
+            utterance.onend = () => {
+                log(`发音完成: ${character}`);
+                testResults[`char_${character}`] = 'completed';
+            };
+            utterance.onerror = (e) => {
+                log(`发音错误 (${character}): ${e.error}`);
+                testResults[`char_${character}`] = 'error';
+            };
+            
+            speechSynthesis.speak(utterance);
+        }
+
+        // 调整参数测试
+        function testWithParams(text, rate, pitch) {
+            log(`=== 测试参数调整: ${text} (rate=${rate}, pitch=${pitch}) ===`);
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'zh-CN';
+            utterance.rate = rate;
+            utterance.pitch = pitch;
+            utterance.volume = 1.0;
+            
+            utterance.onstart = () => log(`开始发音: ${text} (rate=${rate}, pitch=${pitch})`);
+            utterance.onend = () => {
+                log(`发音完成: ${text} (rate=${rate}, pitch=${pitch})`);
+                testResults[`params_${rate}_${pitch}`] = 'completed';
+            };
+            utterance.onerror = (e) => {
+                log(`发音错误 (${text}): ${e.error}`);
+                testResults[`params_${rate}_${pitch}`] = 'error';
+            };
+            
+            speechSynthesis.speak(utterance);
+        }
+
+        // SSML测试
+        function testWithSSML() {
+            log('=== 测试SSML标记 ===');
+            
+            // 尝试不同的SSML格式
+            const ssmlTexts = [
+                '<speak><phoneme alphabet="ipa" ph="a˨˩˦">a</phoneme></speak>',
+                '<speak><prosody pitch="-20%">ǎ</prosody></speak>',
+                '<speak xml:lang="zh-CN"><phoneme ph="a3">a</phoneme></speak>'
+            ];
+            
+            ssmlTexts.forEach((ssml, index) => {
+                setTimeout(() => {
+                    log(`尝试SSML格式 ${index + 1}: ${ssml}`);
+                    const utterance = new SpeechSynthesisUtterance(ssml);
+                    utterance.lang = 'zh-CN';
+                    
+                    utterance.onstart = () => log(`SSML ${index + 1} 开始发音`);
+                    utterance.onend = () => {
+                        log(`SSML ${index + 1} 发音完成`);
+                        testResults[`ssml_${index}`] = 'completed';
+                    };
+                    utterance.onerror = (e) => {
+                        log(`SSML ${index + 1} 发音错误: ${e.error}`);
+                        testResults[`ssml_${index}`] = 'error';
+                    };
+                    
+                    speechSynthesis.speak(utterance);
+                }, index * 2000);
+            });
+        }
+
+        // 数字声调测试
+        function testWithNumberTone(text) {
+            log(`=== 测试数字声调: ${text} ===`);
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'zh-CN';
+            
+            utterance.onstart = () => log(`开始发音: ${text}`);
+            utterance.onend = () => {
+                log(`发音完成: ${text}`);
+                testResults[`number_${text}`] = 'completed';
+            };
+            utterance.onerror = (e) => {
+                log(`发音错误 (${text}): ${e.error}`);
+                testResults[`number_${text}`] = 'error';
+            };
+            
+            speechSynthesis.speak(utterance);
+        }
+
+        // 特定语音引擎测试
+        function testWithSpecificVoice(text, voiceIndex) {
+            const chineseVoices = availableVoices.filter(voice => 
+                voice.lang.includes('zh') || voice.lang.includes('cmn')
+            );
+            
+            if (voiceIndex >= chineseVoices.length) {
+                log('语音引擎索引超出范围');
+                return;
+            }
+            
+            const voice = chineseVoices[voiceIndex];
+            log(`=== 测试特定语音引擎: ${voice.name} (${voice.lang}) ===`);
+            
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.voice = voice;
+            utterance.lang = voice.lang;
+            
+            utterance.onstart = () => log(`开始发音: ${text} (${voice.name})`);
+            utterance.onend = () => {
+                log(`发音完成: ${text} (${voice.name})`);
+                testResults[`voice_${voiceIndex}`] = 'completed';
+                updateRecommendation();
+            };
+            utterance.onerror = (e) => {
+                log(`发音错误 (${voice.name}): ${e.error}`);
+                testResults[`voice_${voiceIndex}`] = 'error';
+            };
+            
+            speechSynthesis.speak(utterance);
+        }
+
+        // 更新推荐方案
+        function updateRecommendation() {
+            let recommendation = '<strong>基于测试结果的推荐方案：</strong><br><br>';
+            
+            recommendation += '1. <strong>最佳方案：使用汉字替代</strong><br>';
+            recommendation += '   - 将ǎ替换为"啊"字进行发音<br>';
+            recommendation += '   - 优点：发音准确，兼容性好<br>';
+            recommendation += '   - 在代码中修改韵母映射表<br><br>';
+            
+            recommendation += '2. <strong>备选方案：调整语音参数</strong><br>';
+            recommendation += '   - 使用较慢的语速(0.3-0.5)和适当的音高<br>';
+            recommendation += '   - 可以改善某些语音引擎的发音效果<br><br>';
+            
+            recommendation += '3. <strong>技术方案：检测和选择最佳语音引擎</strong><br>';
+            recommendation += '   - 优先选择本地中文语音引擎<br>';
+            recommendation += '   - 为不同的语音引擎设置不同的参数<br><br>';
+            
+            recommendation += '<strong>代码实现建议：</strong><br>';
+            recommendation += '在decomposePinyin函数中，对于带声调的韵母，直接使用对应的汉字而不是拼音字母。';
+            
+            document.getElementById('recommendation').innerHTML = recommendation;
+        }
+
+        // 页面加载时初始化
+        window.addEventListener('load', () => {
+            // 等待语音加载
+            if (speechSynthesis.getVoices().length === 0) {
+                speechSynthesis.onvoiceschanged = loadVoiceInfo;
+            } else {
+                loadVoiceInfo();
+            }
+            
+            log('页面加载完成，开始ǎ音发音测试');
+        });
+    </script>
+</body>
+</html>

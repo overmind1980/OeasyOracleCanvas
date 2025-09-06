@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>三符号拼音组合声调测试</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .tone-group {
+            margin: 20px 0;
+            padding: 20px;
+            border: 2px solid #3498db;
+            border-radius: 8px;
+            background-color: #ecf0f1;
+        }
+        .tone-group h3 {
+            color: #2980b9;
+            margin-top: 0;
+        }
+        .test-button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        .test-button:hover {
+            background-color: #2980b9;
+        }
+        .log {
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 20px;
+            white-space: pre-wrap;
+        }
+        .results {
+            margin-top: 20px;
+        }
+        .result-item {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>三符号拼音组合声调测试</h1>
+        <p>测试所有三个符号的拼音组合及其四个声调变体，确保发音准确且不被错误分解：</p>
+        
+        <div class="tone-group">
+            <h3>iao 的四个声调：</h3>
+            <button class="test-button" onclick="testThreeSymbolTone('iao', '腰')">测试 iao (腰)</button>
+            <button class="test-button" onclick="testThreeSymbolTone('iāo', '腰')">测试 iāo (腰)</button>
+            <button class="test-button" onclick="testThreeSymbolTone('iáo', '摇')">测试 iáo (摇)</button>
+            <button class="test-button" onclick="testThreeSymbolTone('iǎo', '咬')">测试 iǎo (咬)</button>
+            <button class="test-button" onclick="testThreeSymbolTone('iào', '要')">测试 iào (要)</button>
+        </div>
+        
+        <div class="tone-group">
+            <h3>uai 的四个声调：</h3>
+            <button class="test-button" onclick="testThreeSymbolTone('uai', '歪')">测试 uai (歪)</button>
+            <button class="test-button" onclick="testThreeSymbolTone('uāi', '歪')">测试 uāi (歪)</button>
+            <button class="test-button" onclick="testThreeSymbolTone('uái', '外')">测试 uái (外)</button>
+            <button class="test-button" onclick="testThreeSymbolTone('uǎi', '拐')">测试 uǎi (拐)</button>
+            <button class="test-button" onclick="testThreeSymbolTone('uài', '坏')">测试 uài (坏)</button>
+        </div>
+        
+        <div class="tone-group">
+            <h3>ian 的四个声调：</h3>
+            <button class="test-button" onclick="testThreeSymbolTone('ian', '烟')">测试 ian (烟)</button>
+            <button class="test-button" onclick="testThreeSymbolTone('iān', '烟')">测试 iān (烟)</button>
+            <button class="test-button" onclick="testThreeSymbolTone('ián', '严')">测试 ián (严)</button>
+            <button class="test-button" onclick="testThreeSymbolTone('iǎn', '眼')">测试 iǎn (眼)</button>
+            <button class="test-button" onclick="testThreeSymbolTone('iàn', '雁')">测试 iàn (雁)</button>
+        </div>
+        
+        <div class="tone-group">
+            <h3>uan 的四个声调：</h3>
+            <button class="test-button" onclick="testThreeSymbolTone('uan', '弯')">测试 uan (弯)</button>
+            <button class="test-button" onclick="testThreeSymbolTone('uān', '弯')">测试 uān (弯)</button>
+            <button class="test-button" onclick="testThreeSymbolTone('uán', '完')">测试 uán (完)</button>
+            <button class="test-button" onclick="testThreeSymbolTone('uǎn', '晚')">测试 uǎn (晚)</button>
+            <button class="test-button" onclick="testThreeSymbolTone('uàn', '万')">测试 uàn (万)</button>
+        </div>
+        
+        <div class="tone-group">
+            <h3>iang 的四个声调：</h3>
+            <button class="test-button" onclick="testThreeSymbolTone('iang', '央')">测试 iang (央)</button>
+            <button class="test-button" onclick="testThreeSymbolTone('iāng', '央')">测试 iāng (央)</button>
+            <button class="test-button" onclick="testThreeSymbolTone('iáng', '羊')">测试 iáng (羊)</button>
+            <button class="test-button" onclick="testThreeSymbolTone('iǎng', '养')">测试 iǎng (养)</button>
+            <button class="test-button" onclick="testThreeSymbolTone('iàng', '样')">测试 iàng (样)</button>
+        </div>
+        
+        <div class="tone-group">
+            <h3>uang 的四个声调：</h3>
+            <button class="test-button" onclick="testThreeSymbolTone('uang', '汪')">测试 uang (汪)</button>
+            <button class="test-button" onclick="testThreeSymbolTone('uāng', '汪')">测试 uāng (汪)</button>
+            <button class="test-button" onclick="testThreeSymbolTone('uáng', '王')">测试 uáng (王)</button>
+            <button class="test-button" onclick="testThreeSymbolTone('uǎng', '往')">测试 uǎng (往)</button>
+            <button class="test-button" onclick="testThreeSymbolTone('uàng', '旺')">测试 uàng (旺)</button>
+        </div>
+        
+        <div class="results" id="results"></div>
+        <div class="log" id="log"></div>
+    </div>
+    
+    <script>
+        let pinyinToCharacterMap = null;
+        
+        // 日志函数
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.textContent += `[${timestamp}] ${message}\n`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message);
+        }
+        
+        // 加载拼音映射配置
+        async function loadPinyinMap() {
+            try {
+                const response = await fetch('pinyinToCharacterMap.json');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                pinyinToCharacterMap = data['韵母映射'];
+                log('拼音映射配置加载成功');
+                return true;
+            } catch (error) {
+                log('加载拼音映射配置失败: ' + error.message);
+                return false;
+            }
+        }
+        
+        // 拼音分解函数（简化版，专门用于测试三符号组合）
+        function decomposePinyin(pinyin, character = '') {
+            log('=== 拼音分解函数 ===');
+            log('输入拼音: ' + pinyin + ', 汉字: ' + character);
+            
+            const result = [];
+            let originalPinyin = pinyin.toLowerCase();
+            
+            // 分解声母和韵母
+            let shengmu = '';
+            let yunmu = '';
+            
+            // 识别声母（按长度从长到短匹配）
+            const shengmuList = ['zh', 'ch', 'sh', 'b', 'p', 'm', 'f', 'd', 't', 'n', 'l', 'g', 'k', 'h', 'j', 'q', 'x', 'r', 'z', 'c', 's', 'y', 'w'];
+            
+            for (let sm of shengmuList) {
+                if (originalPinyin.startsWith(sm)) {
+                    shengmu = sm;
+                    yunmu = originalPinyin.substring(sm.length);
+                    break;
+                }
+            }
+            
+            // 如果没有找到声母，整个就是韵母
+            if (!shengmu) {
+                yunmu = originalPinyin;
+            }
+            
+            log('声母: ' + shengmu + ', 韵母: ' + yunmu);
+            
+            // 处理声母（映射到汉字）
+            if (shengmu) {
+                const shengmuMap = {
+                    'b': '波', 'p': '坡', 'm': '摸', 'f': '佛',
+                    'd': '得', 't': '特', 'n': '讷', 'l': '了',
+                    'g': '哥', 'k': '科', 'h': '喝',
+                    'j': '基', 'q': '欺', 'x': '西',
+                    'zh': '知', 'ch': '蚩', 'sh': '狮', 'r': '儿',
+                    'z': '资', 'c': '雌', 's': '思',
+                    'y': '衣', 'w': '乌'
+                };
+                
+                if (shengmuMap[shengmu]) {
+                    result.push(shengmuMap[shengmu]);
+                    log('添加声母汉字: ' + shengmu + ' → ' + shengmuMap[shengmu]);
+                }
+            }
+            
+            // 处理韵母（三符号组合直接发音，不分解）
+            if (yunmu) {
+                // 三符号组合列表
+                const threeSymbolVowels = [
+                    'iao', 'iāo', 'iáo', 'iǎo', 'iào',
+                    'uai', 'uāi', 'uái', 'uǎi', 'uài',
+                    'uei', 'uēi', 'uéi', 'uěi', 'uèi',
+                    'ian', 'iān', 'ián', 'iǎn', 'iàn',
+                    'uan', 'uān', 'uán', 'uǎn', 'uàn',
+                    'üan', 'ǖan', 'ǘan', 'ǚan', 'ǜan',
+                    'iang', 'iāng', 'iáng', 'iǎng', 'iàng',
+                    'uang', 'uāng', 'uáng', 'uǎng', 'uàng',
+                    'iong', 'iōng', 'ióng', 'iǒng', 'iòng'
+                ];
+                
+                // 检查是否为三符号组合
+                if (threeSymbolVowels.includes(yunmu)) {
+                    result.push(yunmu);
+                    log('添加三符号韵母（整体发音）: ' + yunmu);
+                } else {
+                    // 不是三符号组合，按原逻辑处理
+                    result.push(yunmu);
+                    log('添加韵母: ' + yunmu);
+                }
+            }
+            
+            log('最终分解结果: ' + JSON.stringify(result));
+            return result;
+        }
+        
+        // 语音合成函数
+        async function speak(text, lang = 'zh-CN') {
+            return new Promise((resolve) => {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = lang;
+                utterance.rate = 0.4;
+                utterance.pitch = 1.0;
+                utterance.volume = 1.0;
+                
+                // 统一使用中文语音引擎
+                const voices = speechSynthesis.getVoices();
+                const chineseVoices = voices.filter(voice => voice.lang.startsWith('zh'));
+                if (chineseVoices.length > 0) {
+                    utterance.voice = chineseVoices[0];
+                }
+                
+                utterance.onend = resolve;
+                utterance.onerror = resolve;
+                
+                speechSynthesis.speak(utterance);
+            });
+        }
+        
+        // 顺序播放语音序列
+        async function speakSequence(sequence) {
+            for (let i = 0; i < sequence.length; i++) {
+                log('播放: ' + sequence[i]);
+                await speak(sequence[i]);
+                if (i < sequence.length - 1) {
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+            }
+        }
+        
+        // 测试三符号声调
+        async function testThreeSymbolTone(pinyin, character) {
+            if (!pinyinToCharacterMap) {
+                const loaded = await loadPinyinMap();
+                if (!loaded) return;
+            }
+            
+            log('\n=== 测试 ' + pinyin + ' (' + character + ') ===');
+            
+            // 分解拼音
+            const decomposed = decomposePinyin(pinyin, character);
+            
+            // 显示结果
+            const resultsDiv = document.getElementById('results');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = 'result-item';
+            resultDiv.innerHTML = `
+                <h4>${character} (${pinyin})</h4>
+                <p><strong>分解结果:</strong> ${decomposed.join(' → ')}</p>
+                <p><strong>完整序列:</strong> ${[...decomposed, character].join(' → ')}</p>
+                <button onclick="speakSequence(['${decomposed.join("', '")}', '${character}'])">播放分解发音</button>
+            `;
+            resultsDiv.appendChild(resultDiv);
+            
+            // 自动播放
+            speakSequence([...decomposed, character]);
+        }
+        
+        // 页面加载时初始化
+        window.addEventListener('load', async () => {
+            log('页面加载完成，开始初始化...');
+            await loadPinyinMap();
+            log('初始化完成，可以开始测试');
+        });
+    </script>
+</body>
+</html>

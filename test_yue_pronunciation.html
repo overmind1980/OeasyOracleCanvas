@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>"月"字拼音分解发音测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 15px;
+            margin: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .log {
+            background: #f5f5f5;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 3px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>"月"字拼音分解发音测试</h1>
+    
+    <div class="test-section">
+        <h2>测试"月"字拼音分解</h2>
+        <button onclick="testYueDecomposition()">测试"月"字拼音分解</button>
+        <button onclick="testIndividualComponents()">测试各个组件单独发音</button>
+        <button onclick="clearLog()">清空日志</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>语音引擎信息</h2>
+        <button onclick="showVoiceInfo()">显示可用语音</button>
+    </div>
+    
+    <div class="log" id="log"></div>
+    
+    <script>
+        // 日志函数
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.textContent += `[${timestamp}] ${message}\n`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+        
+        function clearLog() {
+            document.getElementById('log').textContent = '';
+        }
+        
+        // 加载拼音映射配置
+        let pinyinToCharacterMap = null;
+        
+        async function loadPinyinMap() {
+            try {
+                const response = await fetch('./pinyinToCharacterMap.json');
+                pinyinToCharacterMap = await response.json();
+                log('拼音映射配置加载成功');
+                return true;
+            } catch (error) {
+                log('拼音映射配置加载失败: ' + error.message);
+                return false;
+            }
+        }
+        
+        // 拼音分解函数（简化版）
+        function decomposePinyin(pinyin, character = '') {
+            log(`=== 拼音分解函数 ===`);
+            log(`输入拼音: ${pinyin}, 汉字: ${character}`);
+            
+            if (!pinyinToCharacterMap) {
+                log('错误：拼音映射配置未加载');
+                return [];
+            }
+            
+            let result = [];
+            let originalPinyin = pinyin.toLowerCase();
+            
+            // 分解声母和韵母
+            let shengmu = '';
+            let yunmu = '';
+            
+            // 识别声母
+            const shengmuList = ['zh', 'ch', 'sh', 'b', 'p', 'm', 'f', 'd', 't', 'n', 'l', 'g', 'k', 'h', 'j', 'q', 'x', 'r', 'z', 'c', 's', 'y', 'w'];
+            
+            for (let sm of shengmuList) {
+                if (originalPinyin.startsWith(sm)) {
+                    shengmu = sm;
+                    yunmu = originalPinyin.substring(sm.length);
+                    break;
+                }
+            }
+            
+            log(`声母: ${shengmu}, 韵母: ${yunmu}`);
+            
+            // 处理声母（映射到汉字）
+            if (shengmu && pinyinToCharacterMap['声母映射'][shengmu]) {
+                result.push(pinyinToCharacterMap['声母映射'][shengmu]);
+                log(`声母映射: ${shengmu} → ${pinyinToCharacterMap['声母映射'][shengmu]}`);
+            }
+            
+            // 处理韵母（直接使用拼音字母）
+            if (yunmu) {
+                result.push(yunmu);
+                log(`韵母: ${yunmu}`);
+            }
+            
+            log(`最终分解结果: ${JSON.stringify(result)}`);
+            return result;
+        }
+        
+        // 语音合成函数
+        function speakWithEngine(text, lang = 'zh-CN', voiceName = null) {
+            return new Promise((resolve, reject) => {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = lang;
+                utterance.rate = 0.4;
+                utterance.pitch = 1.0;
+                utterance.volume = 1.0;
+                
+                // 如果指定了语音名称，尝试使用
+                if (voiceName) {
+                    const voices = speechSynthesis.getVoices();
+                    const voice = voices.find(v => v.name === voiceName);
+                    if (voice) {
+                        utterance.voice = voice;
+                        log(`使用指定语音: ${voice.name} (${voice.lang})`);
+                    } else {
+                        log(`未找到指定语音: ${voiceName}`);
+                    }
+                }
+                
+                utterance.onstart = () => {
+                    log(`✓ 开始朗读: ${text} (${lang})`);
+                };
+                
+                utterance.onend = () => {
+                    log(`✓ 朗读完成: ${text}`);
+                    resolve();
+                };
+                
+                utterance.onerror = (event) => {
+                    log(`✗ 朗读出错: ${text}, 错误: ${event.error}`);
+                    reject(event.error);
+                };
+                
+                speechSynthesis.speak(utterance);
+            });
+        }
+        
+        // 测试"月"字拼音分解
+        async function testYueDecomposition() {
+            log('\n=== 开始测试"月"字拼音分解 ===');
+            
+            if (!pinyinToCharacterMap) {
+                const loaded = await loadPinyinMap();
+                if (!loaded) return;
+            }
+            
+            // 停止所有正在进行的语音
+            speechSynthesis.cancel();
+            
+            const character = '月';
+            const pinyin = 'yuè';
+            
+            // 分解拼音
+            const decomposed = decomposePinyin(pinyin, character);
+            log(`"月"字分解结果: ${JSON.stringify(decomposed)}`);
+            
+            // 创建完整朗读序列
+            const sequence = [...decomposed, character];
+            log(`完整朗读序列: ${JSON.stringify(sequence)}`);
+            
+            // 逐个朗读
+            for (let i = 0; i < sequence.length; i++) {
+                const text = sequence[i];
+                log(`\n--- 朗读第 ${i + 1} 个: ${text} ---`);
+                
+                try {
+                    await speakWithEngine(text, 'zh-CN');
+                    // 等待500ms
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                } catch (error) {
+                    log(`朗读失败: ${error}`);
+                }
+            }
+            
+            log('=== "月"字拼音分解测试完成 ===');
+        }
+        
+        // 测试各个组件单独发音
+        async function testIndividualComponents() {
+            log('\n=== 测试各个组件单独发音 ===');
+            
+            speechSynthesis.cancel();
+            
+            const components = ['y', 'yuè', 'ǜe', '月'];
+            
+            for (const component of components) {
+                log(`\n测试发音: ${component}`);
+                try {
+                    await speakWithEngine(component, 'zh-CN');
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                } catch (error) {
+                    log(`发音失败: ${error}`);
+                }
+            }
+            
+            log('=== 各个组件单独发音测试完成 ===');
+        }
+        
+        // 显示语音信息
+        function showVoiceInfo() {
+            log('\n=== 可用语音信息 ===');
+            
+            const voices = speechSynthesis.getVoices();
+            log(`总共找到 ${voices.length} 个语音`);
+            
+            // 按语言分组
+            const chineseVoices = voices.filter(v => v.lang.startsWith('zh'));
+            const englishVoices = voices.filter(v => v.lang.startsWith('en'));
+            
+            log(`\n中文语音 (${chineseVoices.length} 个):`);
+            chineseVoices.forEach(voice => {
+                log(`  - ${voice.name} (${voice.lang}) ${voice.default ? '[默认]' : ''}`);
+            });
+            
+            log(`\n英文语音 (${englishVoices.length} 个):`);
+            englishVoices.forEach(voice => {
+                log(`  - ${voice.name} (${voice.lang}) ${voice.default ? '[默认]' : ''}`);
+            });
+        }
+        
+        // 页面加载时初始化
+        window.addEventListener('load', async () => {
+            log('页面加载完成，初始化中...');
+            
+            // 等待语音列表加载
+            if (speechSynthesis.getVoices().length === 0) {
+                speechSynthesis.addEventListener('voiceschanged', () => {
+                    log('语音列表已加载');
+                    showVoiceInfo();
+                });
+            } else {
+                showVoiceInfo();
+            }
+            
+            // 加载拼音映射
+            await loadPinyinMap();
+            
+            log('初始化完成，可以开始测试');
+        });
+    </script>
+</body>
+</html>

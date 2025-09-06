@@ -1,0 +1,29 @@
+{
+  "name": "oracle-learning-app",
+  "version": "1.0.0",
+  "description": "甲骨文学习应用 - 交互式甲骨文字符学习平台，支持拼音分解发音",
+  "main": "index.html",
+  "scripts": {
+    "dev": "python3 -m http.server 8000",
+    "build": "echo 'Static site - no build required'",
+    "deploy": "vercel --prod"
+  },
+  "keywords": [
+    "oracle",
+    "chinese",
+    "learning",
+    "pinyin",
+    "education",
+    "甲骨文"
+  ],
+  "author": "Oracle Learning Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/username/oracle-learning-app.git"
+  },
+  "homepage": "https://oracle-learning-app.vercel.app",
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
